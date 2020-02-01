@@ -1,6 +1,5 @@
 package lab1;
 import Sim.Event;
-import Sim.EventHandle;
 import Sim.SimEnt;
 import Sim.Link;
 import Sim.Message;
@@ -9,7 +8,6 @@ public class LossyLink extends Link  {
 	
 	private SimEnt _connectorA=null;
 	private SimEnt _connectorB=null;
-	private int _now=0;
 	
 	private double delay, initialJitter, simulatedJitter, dropProb;
 	
@@ -32,19 +30,17 @@ public class LossyLink extends Link  {
 		if (event instanceof Message)
 		{
 			System.out.println("Link recv msg, passes it through");
-			EventHandle eh;
+			if (Math.random() >= this.dropProb) {
+				System.out.println("Link recv msg, but drops it!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+				return;
+			}
 			if (source == _connectorA)
 			{
-				eh = send(_connectorB, event, calculateDelay());
+				send(_connectorB, event, calculateDelay());
 			}
 			else
 			{
-				eh = send(_connectorA, event, calculateDelay());
-			}
-			
-			if (Math.random() >= this.dropProb) {
-				eraseScheduledEvent(eh);
-				System.out.println("Link recv msg, but drops it!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+				send(_connectorA, event, calculateDelay());
 			}
 		}
 		
