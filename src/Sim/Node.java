@@ -75,7 +75,7 @@ public class Node extends SimEnt {
 		}
 		if (ev instanceof ExtendedMessage) {
 			((ExtendedMessage) ev).delay = SimEngine.getTime() - ((ExtendedMessage) ev).getTimestamp();
-			System.out.println("Node "+_id.networkId()+ "." + _id.nodeId() +" receives extended message with seq: "+((ExtendedMessage) ev).seq() + " at time "+SimEngine.getTime()+". Time to receive: "+((ExtendedMessage) ev).delay);
+			System.out.println("Node "+_id.networkId()+ "." + _id.nodeId() +" receives extended message with seq: "+((ExtendedMessage) ev).seq() + " at time "+SimEngine.getTime()+". Time to receive: "+((ExtendedMessage) ev).delay +". Average jitter of link: "+((ExtendedMessage) ev).getAvgJitter());
 		}
 		else if (ev instanceof Message)
 		{

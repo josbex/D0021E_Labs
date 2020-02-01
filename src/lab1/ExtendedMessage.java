@@ -15,7 +15,6 @@ public class ExtendedMessage extends Message {
 	
 	private double timestamp;
 	private double jitter;
-	
 	public double delay;
 	
 	public static double calcJitter() {
@@ -30,6 +29,10 @@ public class ExtendedMessage extends Message {
 			//msg.jitter = 
 		}
 		return sum / msgs.size();
+	}
+	
+	public double getAvgJitter(){
+		return calcJitter();
 	}
 
 	public ExtendedMessage(NetworkAddr from, NetworkAddr to, int seq, double timestamp) {

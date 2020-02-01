@@ -29,11 +29,11 @@ public class LossyLink extends Link  {
 	public void recv(SimEnt source, Event event) {
 		if (event instanceof Message)
 		{
-			System.out.println("Link recv msg, passes it through");
 			if (Math.random() >= this.dropProb) {
 				System.out.println("Link recv msg, but drops it!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 				return;
 			}
+			System.out.println("Link recv msg, passes it through");
 			if (source == _connectorA)
 			{
 				send(_connectorB, event, calculateDelay());
