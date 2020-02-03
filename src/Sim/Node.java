@@ -6,16 +6,23 @@ import lab1.ExtendedMessage;
 // and it count messages send and received.
 
 public class Node extends SimEnt {
+
+	private static int counter = 0;
+
 	private NetworkAddr _id;
 	private SimEnt _peer;
 	private int _sentmsg=0;
 	private int _seq = 0;
+
 
 	
 	public Node (int network, int node)
 	{
 		super();
 		_id = new NetworkAddr(network, node);
+
+		this.identifierString = "Node " + _id.networkId() + "." + _id.nodeId();
+		Node.counter++;
 	}	
 	
 	
@@ -25,7 +32,7 @@ public class Node extends SimEnt {
 	{
 		_peer = peer;
 		
-		if(_peer instanceof Link )
+		if(_peer instanceof Link)
 		{
 			 ((Link) _peer).setConnector(this);
 		}
@@ -63,24 +70,23 @@ public class Node extends SimEnt {
 	public void recv(SimEnt src, Event ev)
 	{
 		if (ev instanceof TimerEvent)
-		{			
+		{
 			if (_stopSendingAfter > _sentmsg)
 			{
 				_sentmsg++;
 				send(_peer, new ExtendedMessage(_id, new NetworkAddr(_toNetwork, _toHost),_seq, SimEngine.getTime()),0);
 				send(this, new TimerEvent(),_timeBetweenSending);
-				System.out.println("Node "+_id.networkId()+ "." + _id.nodeId() +" sent message with seq: "+_seq + " at time "+SimEngine.getTime());
+				this.printMsg("Sent message with seq: "+_seq + " at time "+SimEngine.getTime());
 				_seq++;
 			}
 		}
 		if (ev instanceof ExtendedMessage) {
 			((ExtendedMessage) ev).delay = SimEngine.getTime() - ((ExtendedMessage) ev).getTimestamp();
-			System.out.println("Node "+_id.networkId()+ "." + _id.nodeId() +" receives extended message with seq: "+((ExtendedMessage) ev).seq() + " at time "+SimEngine.getTime()+". Time to receive: "+((ExtendedMessage) ev).delay +". Average jitter of link: "+((ExtendedMessage) ev).getAvgJitter());
+			this.printMsg("Receives extended message with seq: "+((ExtendedMessage) ev).seq() + " at time "+SimEngine.getTime()+". Time to receive: "+((ExtendedMessage) ev).delay +". Average jitter of link: "+((ExtendedMessage) ev).getAvgJitter());
 		}
 		else if (ev instanceof Message)
 		{
-			System.out.println("Node "+_id.networkId()+ "." + _id.nodeId() +" receives message with seq: "+((Message) ev).seq() + " at time "+SimEngine.getTime());
-			
+			this.printMsg("Receives message with seq: "+((Message) ev).seq() + " at time "+SimEngine.getTime());
 		}
 	}
 }

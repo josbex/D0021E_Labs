@@ -4,6 +4,8 @@ package Sim;
 
 public class Switch extends SimEnt{
 
+    private static int counter = 0;
+
 	private SwitchTableEntry [] _switchTable;
 	private int _ports;
 	
@@ -13,6 +15,9 @@ public class Switch extends SimEnt{
 	{
 		_switchTable = new SwitchTableEntry[ports];
 		_ports=ports;
+
+		this.identifierString = "Switch" + Switch.counter;
+		Switch.counter++;
 	}
 	
 	// This method connects links to the switch and also informs the 
@@ -25,7 +30,7 @@ public class Switch extends SimEnt{
 			_switchTable[portNumber] = new SwitchTableEntry(link, node);
 		}
 		else
-			System.out.println("Trying to connect to port not in switch");
+			this.printMsg("Trying to connect to port not in switch");
 		
 		((Link) link).setConnector(this);
 	}
@@ -55,9 +60,9 @@ public class Switch extends SimEnt{
 	{
 		if (event instanceof Message)
 		{
-			System.out.println("Switch handles frame with seq: " + ((Message) event).seq() + " from node: "+ ((Message) event).source().nodeId());
+			this.printMsg("Switch handles frame with seq: " + ((Message) event).seq() + " from node: "+ ((Message) event).source().nodeId());
 			SimEnt sendNext = getPort(((Message) event).destination().nodeId());
-			System.out.println("Switch forwards to host: " + ((Message) event).destination().nodeId());		
+			this.printMsg("Switch forwards to host: " + ((Message) event).destination().nodeId());
 			send (sendNext, event, 0);
 	
 		}	

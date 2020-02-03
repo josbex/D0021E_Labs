@@ -4,6 +4,8 @@ package Sim;
 
 public class Router extends SimEnt{
 
+	private static int counter = 0;
+
 	private RouteTableEntry [] _routingTable;
 	private int _interfaces;
 	private int _now=0;
@@ -14,6 +16,10 @@ public class Router extends SimEnt{
 	{
 		_routingTable = new RouteTableEntry[interfaces];
 		_interfaces=interfaces;
+
+		this.identifierString = "Router " + Router.counter;
+		Router.counter++;
+
 	}
 	
 	// This method connects links to the router and also informs the 
@@ -26,7 +32,7 @@ public class Router extends SimEnt{
 			_routingTable[interfaceNumber] = new RouteTableEntry(link, node);
 		}
 		else
-			System.out.println("Trying to connect to port not in router");
+			this.printMsg("Trying to connect to port not in router");
 		
 		((Link) link).setConnector(this);
 	}
@@ -56,9 +62,9 @@ public class Router extends SimEnt{
 	{
 		if (event instanceof Message)
 		{
-			System.out.println("Router handles packet with seq: " + ((Message) event).seq()+" from node: "+((Message) event).source().networkId()+"." + ((Message) event).source().nodeId() );
+			this.printMsg("Handles packet with seq: " + ((Message) event).seq()+" from node: "+((Message) event).source().networkId()+"." + ((Message) event).source().nodeId() );
 			SimEnt sendNext = getInterface(((Message) event).destination().networkId());
-			System.out.println("Router sends to node: " + ((Message) event).destination().networkId()+"." + ((Message) event).destination().nodeId());		
+			this.printMsg("Sends to node: " + ((Message) event).destination().networkId()+"." + ((Message) event).destination().nodeId());
 			send (sendNext, event, _now);
 	
 		}	

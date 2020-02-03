@@ -4,10 +4,15 @@ package Sim;
 // need to inherit from this class
 
 public abstract class SimEnt {
-	
+
+    protected static int counter = 0;
+
+    protected String identifierString;
 
 	protected SimEnt()
-	{	
+	{
+		this.identifierString = "SimEnt " + SimEnt.counter;
+		SimEnt.counter++;
 	}
 	
 	// Called when erasing an entity like node or link etc. The SimEngine is called in case
@@ -45,5 +50,9 @@ public abstract class SimEnt {
 	// To be implemented in child classes acting on events/messages received
 	
 	public abstract void recv(SimEnt source, Event event);
-	
+
+	public void printMsg(String msg) {
+		System.out.println("[" +this.identifierString + "]: " + msg);
+	}
+
 }
