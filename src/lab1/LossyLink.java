@@ -29,7 +29,7 @@ public class LossyLink extends Link  {
 	public void recv(SimEnt source, Event event) {
 		if (event instanceof Message)
 		{
-			if (Math.random() >= this.dropProb) {
+			if (Math.random() < this.dropProb) {
 				System.out.println("Link recv msg, but drops it!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 				return;
 			}
