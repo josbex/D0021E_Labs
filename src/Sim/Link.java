@@ -4,11 +4,16 @@ package Sim;
 
 public abstract class Link extends SimEnt {
 
+    private static int counter;
+
     protected SimEnt _connectorA=null;
     protected SimEnt _connectorB=null;
 
+
     protected Link() {
         super();
+        this.identifierString = "Link " + this.counter;
+        Link.counter++;
     }
 
     // Connects the link to some simulation entity like
