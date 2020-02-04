@@ -1,5 +1,8 @@
 package lab1;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 
 import Sim.Message;
@@ -27,6 +30,7 @@ public class ExtendedMessage extends Message {
 			//	continue;
 			//}
 			//msg.jitter = 
+			
 		}
 		return sum / msgs.size();
 	}
