@@ -1,16 +1,4 @@
 package lab1;
-<<<<<<< HEAD
-import Sim.*;
-
-import ANSIColors.Color;
-
-public class LossyLink extends Link {
-
-	private double delay, initialJitter, simulatedJitter, dropProb;
-	private int packetsDropped;
-
-	public LossyLink(double delay, double jitter, double dropProb) {
-=======
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -21,9 +9,12 @@ import Sim.SimEnt;
 import Sim.Link;
 import Sim.Message;
 
+import ANSIColors.Color;
+
+
 public class LossyLink extends Link  {
 	
-	private static int counter = 0;
+	//private static int counter = 0;
 	
 	private SimEnt _connectorA=null;
 	private SimEnt _connectorB=null;
@@ -31,16 +22,20 @@ public class LossyLink extends Link  {
 	private ArrayList<Double> delays;
 	
 	private double delay, initialJitter, simulatedJitter, dropProb;
-	
+	private int packetsReceived, packetsDropped;
+
 	public LossyLink(double delay, double jitter, double dropProb){
 		this.delay = delay;
 		this.initialJitter = jitter;
 		this.simulatedJitter = jitter;
 		this.dropProb = dropProb;
+		this.packetsDropped = 0;
+		this.packetsReceived = 0;
 		this.delays = new ArrayList<Double>();
 	}
 
 	public void recv(SimEnt source, Event event) {
+		this.packetsReceived++;
 		if (event instanceof Message)
 		{
 			if (Math.random() < this.dropProb) {
@@ -94,8 +89,15 @@ public class LossyLink extends Link  {
 
 	public void printSummary() {
 		System.out.println(Color.green(this.identifierString) + " Summary");
-		System.out.println("    " + "         Jitter: " + this.simulatedJitter);
-		System.out.println("    " + "Dropped Packets: " + this.packetsDropped);
+		System.out.println("    " + "          Jitter: " + this.simulatedJitter);
+		System.out.printf("    " + " Dropped Packets: %d/%d (%.2f%%)\n", this.packetsDropped, this.packetsReceived,
+				100 * ((double) this.packetsDropped)/((double) this.packetsReceived));
+		System.out.println("    " + "   Average delay: " + this.averageDelay());
+	}
+
+	private String dropPercentage() {
+		int division = (this.packetsDropped * 1000) / (this.packetsReceived);
+		return Integer.toString(division / 10) + "." + Integer.toString(division / 1000);
 	}
 
 }

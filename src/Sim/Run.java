@@ -10,7 +10,7 @@ public class Run {
  		//Link link1 = new IdealLink();
 		//Link link2 = new IdealLink();
 		
- 		Link link1 = new LossyLink(20, 3, 0.1);
+ 		Link link1 = new LossyLink(20, 3, 0.9);
 		Link link2 = new LossyLink(20, 3, 0.1);
 		
 		// Create two end hosts that will be
@@ -33,7 +33,7 @@ public class Run {
 		
 		// Generate some traffic
 		// host1 will send 3 messages with time interval 5 to network 2, node 1. Sequence starts with number 1
-		host1.StartSending(2, 2, 3, 5, 1);
+		host1.StartSending(2, 2, 15, 5, 1);
 		// host2 will send 2 messages with time interval 10 to network 1, node 1. Sequence starts with number 10
 		host2.StartSending(1, 1, 2, 10, 10); 
 		
@@ -44,11 +44,11 @@ public class Run {
 		try
 		{
 			t.join();
-			//((LossyLink) link1).printSummary();
-			//((LossyLink) link2).printSummary();
+			((LossyLink) link1).printSummary();
+			((LossyLink) link2).printSummary();
 			
-			System.out.println("Link 1: " + ((LossyLink) link1).averageDelay());
-			System.out.println("Link 1: " + ((LossyLink) link2).averageDelay());
+			//System.out.println("Link 1: " + ((LossyLink) link1).averageDelay());
+			//System.out.println("Link 1: " + ((LossyLink) link2).averageDelay());
 		}
 		catch (Exception e)
 		{
