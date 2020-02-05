@@ -44,6 +44,8 @@ public class Run {
 		try
 		{
 			t.join();
+			((LossyLink) link1).printSummary();
+			((LossyLink) link2).printSummary();
 		}
 		catch (Exception e)
 		{

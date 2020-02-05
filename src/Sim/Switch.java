@@ -16,7 +16,7 @@ public class Switch extends SimEnt{
 		_switchTable = new SwitchTableEntry[ports];
 		_ports=ports;
 
-		this.identifierString = "Switch" + Switch.counter;
+		this.identifierString = "SWITCH" + Switch.counter;
 		Switch.counter++;
 	}
 	

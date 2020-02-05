@@ -12,7 +12,7 @@ public abstract class Link extends SimEnt {
 
     protected Link() {
         super();
-        this.identifierString = "Link " + this.counter;
+        this.identifierString = "LINK " + this.counter;
         Link.counter++;
     }
 

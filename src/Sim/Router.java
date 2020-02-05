@@ -17,7 +17,7 @@ public class Router extends SimEnt{
 		_routingTable = new RouteTableEntry[interfaces];
 		_interfaces=interfaces;
 
-		this.identifierString = "Router " + Router.counter;
+		this.identifierString = "ROUTER " + Router.counter;
 		Router.counter++;
 
 	}

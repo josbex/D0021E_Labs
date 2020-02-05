@@ -21,7 +21,7 @@ public class Node extends SimEnt {
 		super();
 		_id = new NetworkAddr(network, node);
 
-		this.identifierString = "Node " + _id.networkId() + "." + _id.nodeId();
+		this.identifierString = "NODE " + _id.networkId() + "." + _id.nodeId();
 		Node.counter++;
 	}	
 	

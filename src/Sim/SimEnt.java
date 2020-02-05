@@ -11,7 +11,7 @@ public abstract class SimEnt {
 
 	protected SimEnt()
 	{
-		this.identifierString = "SimEnt " + SimEnt.counter;
+		this.identifierString = "SIMENT " + SimEnt.counter;
 		SimEnt.counter++;
 	}
 	

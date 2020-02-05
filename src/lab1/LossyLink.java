@@ -6,6 +6,7 @@ import ANSIColors.Color;
 public class LossyLink extends Link {
 
 	private double delay, initialJitter, simulatedJitter, dropProb;
+	private int packetsDropped;
 
 	public LossyLink(double delay, double jitter, double dropProb) {
 		this.delay = delay;
@@ -19,6 +20,7 @@ public class LossyLink extends Link {
 		{
 			if (Math.random() < this.dropProb) {
 				this.printMsg(Color.red("DROP ") + "msg seq: " + ((Message) event).seq());
+				this.packetsDropped++;
 			} else {
 				this.printMsg("Recv msg, passes it through");
 				if (source == _connectorA) {
@@ -28,11 +30,17 @@ public class LossyLink extends Link {
 				}
 			}
 		}
-		
+
 	}
 	
 	private double calculateDelay(){
 		return this.delay + this.initialJitter * (2 * Math.random() - 1);
+	}
+
+	public void printSummary() {
+		System.out.println(Color.green(this.identifierString) + " Summary");
+		System.out.println("    " + "         Jitter: " + this.simulatedJitter);
+		System.out.println("    " + "Dropped Packets: " + this.packetsDropped);
 	}
 
 }
