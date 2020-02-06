@@ -4,26 +4,25 @@ package Sim;
 
 public abstract class Link extends SimEnt {
 
-    private static int counter;
+	private static int counter;
 
-    protected SimEnt _connectorA=null;
-    protected SimEnt _connectorB=null;
+	protected SimEnt _connectorA = null;
+	protected SimEnt _connectorB = null;
 
 
-    protected Link() {
-        super();
-        this.identifierString = "LINK " + Link.counter;
-        Link.counter++;
-    }
+	protected Link() {
+		super();
+		this._identifierString = "LINK " + Link.counter;
+		Link.counter++;
+	}
 
-    // Connects the link to some simulation entity like
-    // a node, switch, router etc.
+	// Connects the link to some simulation entity like
+	// a node, switch, router etc.
 
-    public void setConnector(SimEnt connectTo)
-    {
-        if (_connectorA == null)
-            _connectorA=connectTo;
-        else
-            _connectorB=connectTo;
-    }
+	public void setConnector(SimEnt connectTo) {
+		if (_connectorA == null)
+			_connectorA = connectTo;
+		else
+			_connectorB = connectTo;
+	}
 }

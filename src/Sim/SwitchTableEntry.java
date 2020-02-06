@@ -5,20 +5,17 @@ package Sim;
 //connected to the other side of the link
 
 
-public class SwitchTableEntry extends TableEntry{
+public class SwitchTableEntry extends TableEntry {
 
-	SwitchTableEntry(SimEnt link, SimEnt node)
-	{
+	SwitchTableEntry(SimEnt link, SimEnt node) {
 		super(link, node);
 	}
-	
-	public SimEnt link()
-	{
+
+	public SimEnt link() {
 		return super.link();
 	}
 
-	public SimEnt node()
-	{
+	public SimEnt node() {
 		return super.node();
 	}
 

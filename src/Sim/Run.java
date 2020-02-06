@@ -1,61 +1,57 @@
 package Sim;
+
 import lab1.LossyLink;
 
 // An example of how to build a topology and starting the simulation engine
 
 public class Run {
-	public static void main (String [] args)
-	{
- 		//Creates two links
- 		//Link link1 = new IdealLink();
+	public static void main(String[] args) {
+		//Creates two links
+		//Link link1 = new IdealLink();
 		//Link link2 = new IdealLink();
-		
- 		Link link1 = new LossyLink(20, 3, 0.9);
+
+		Link link1 = new LossyLink(20, 3, 0.1);
 		Link link2 = new LossyLink(20, 3, 0.1);
-		
+
 		// Create two end hosts that will be
 		// communicating via the router
-		Node host1 = new Node(1,1);
-		Node host2 = new Node(2,1);
+		Node host1 = new Node(1, 1);
+		Node host2 = new Node(2, 1);
 
 		//Connect links to hosts
 		host1.setPeer(link1);
 		host2.setPeer(link2);
 
 		// Creates as router and connect
-		// links to it. Information about 
+		// links to it. Information about
 		// the host connected to the other
 		// side of the link is also provided
 		// Note. A switch is created in same way using the Switch class
 		Router routeNode = new Router(2);
 		routeNode.connectInterface(0, link1, host1);
 		routeNode.connectInterface(1, link2, host2);
-		
+
 		// Generate some traffic
 		// host1 will send 3 messages with time interval 5 to network 2, node 1. Sequence starts with number 1
 		host1.StartSending(2, 2, 15, 5, 1);
 		// host2 will send 2 messages with time interval 10 to network 1, node 1. Sequence starts with number 10
-		host2.StartSending(1, 1, 2, 10, 10); 
-		
+		host2.StartSending(1, 1, 2, 10, 10);
+
 		// Start the simulation engine and of we go!
-		Thread t=new Thread(SimEngine.instance());
-	
+		Thread t = new Thread(SimEngine.instance());
+
 		t.start();
-		try
-		{
+		try {
 			t.join();
+			System.out.println("\n" + "---- SUMMARY ----");
 			((LossyLink) link1).printSummary();
 			((LossyLink) link2).printSummary();
-			
+
 			//System.out.println("Link 1: " + ((LossyLink) link1).averageDelay());
 			//System.out.println("Link 1: " + ((LossyLink) link2).averageDelay());
-		}
-		catch (Exception e)
-		{
+		} catch (Exception e) {
 			System.out.println("The motor seems to have a problem, time for service?");
-		}		
-
-
+		}
 
 	}
 }

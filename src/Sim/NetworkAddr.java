@@ -8,20 +8,17 @@ package Sim;
 public class NetworkAddr {
 	private int _networkId;
 	private int _nodeId;
-	
-	NetworkAddr(int network, int node)
-	{
-		_networkId=network;
-		_nodeId=node;
+
+	NetworkAddr(int network, int node) {
+		_networkId = network;
+		_nodeId = node;
 	}
-	
-	public int networkId()
-	{
+
+	public int networkId() {
 		return _networkId;
 	}
-	
-	public int nodeId()
-	{
+
+	public int nodeId() {
 		return _nodeId;
 	}
 }
