@@ -46,7 +46,7 @@ public class Run {
 			t.join();
 			
 			System.out.println("Link 1: " + ((LossyLink) link1).averageDelay());
-			System.out.println("Link 1: " + ((LossyLink) link2).averageDelay());
+			System.out.println("Link 2: " + ((LossyLink) link2).averageDelay());
 		}
 		catch (Exception e)
 		{

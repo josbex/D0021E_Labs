@@ -59,6 +59,9 @@ public class LossyLink extends Link  {
 		
 	}
 	
+	/*
+	 * Decides randomly what the delay will be within the range of the set delay +/- the initial jitter.
+	 */
 	private double calculateDelay(){
 		double newDelay = this.delay + this.initialJitter * (2 * Math.random() - 1);
 		this.delays.add(newDelay);
@@ -66,6 +69,10 @@ public class LossyLink extends Link  {
 		return newDelay;
 	}
 	
+	/*
+	 * Calculates what the jitter of the link is
+	 * by taking the difference between the most recent delay and the next most recent.
+	 */
 	private double currentJitter() {
 		if (this.delays.size() > 1) {
 			return this.delays.get(this.delays.size() - 1) - this.delays.get(this.delays.size() - 2);
@@ -74,13 +81,17 @@ public class LossyLink extends Link  {
 		}
 	}
 	
+	/**
+	 * Writes each delay and jitter to a file as these values change.
+	 * @param delay : the calculated delay of the link
+	 * @param jitter : the current jitter of the link, based on previous delays
+	 */
 	private void writeDelayToFile(double delay, double jitter) {
 		try {
 			BufferedWriter writer = new BufferedWriter(new FileWriter("delays" + id +".txt", true));
 			writer.append(delay + " " + jitter + "\n" );
 			writer.close();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}

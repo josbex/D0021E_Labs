@@ -1,6 +1,6 @@
 package Sim;
 
-import lab1.ExtendedMessage;
+
 
 // This class implements a node (host) it has an address, a peer that it communicates with
 // and it count messages send and received.
@@ -67,17 +67,13 @@ public class Node extends SimEnt {
 			if (_stopSendingAfter > _sentmsg)
 			{
 				_sentmsg++;
-				send(_peer, new ExtendedMessage(_id, new NetworkAddr(_toNetwork, _toHost),_seq, SimEngine.getTime()),0);
+				send(_peer, new Message(_id, new NetworkAddr(_toNetwork, _toHost),_seq),0);
 				send(this, new TimerEvent(),_timeBetweenSending);
 				System.out.println("Node "+_id.networkId()+ "." + _id.nodeId() +" sent message with seq: "+_seq + " at time "+SimEngine.getTime());
 				_seq++;
 			}
 		}
-		if (ev instanceof ExtendedMessage) {
-			((ExtendedMessage) ev).delay = SimEngine.getTime() - ((ExtendedMessage) ev).getTimestamp();
-			System.out.println("Node "+_id.networkId()+ "." + _id.nodeId() +" receives extended message with seq: "+((ExtendedMessage) ev).seq() + " at time "+SimEngine.getTime()+". Time to receive: "+((ExtendedMessage) ev).delay +". Average jitter of link: "+((ExtendedMessage) ev).getAvgJitter());
-		}
-		else if (ev instanceof Message)
+		if (ev instanceof Message)
 		{
 			System.out.println("Node "+_id.networkId()+ "." + _id.nodeId() +" receives message with seq: "+((Message) ev).seq() + " at time "+SimEngine.getTime());
 			
