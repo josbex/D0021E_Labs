@@ -41,7 +41,7 @@ public class Run {
 		//host1.StartSending(2, 2, 100, 5, 1); 
 		
 		//CBR_generator sends 100 packets in the span of 10 seconds
-		host1.StartSending(2, 2, 4, 10); 
+		host1.StartSending(2, 2, 100, 10); 
 		
 		// host2 will send 2 messages with time interval 10 to network 1, node 1. Sequence starts with number 10
 		//host2.StartSending(1, 1, 2, 10, 10); 

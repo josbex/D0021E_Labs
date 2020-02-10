@@ -49,7 +49,7 @@ public class CBR_Genrator extends Node {
 		if (ev instanceof TimerEvent)
 		{
 			//Stop sending packets if it is not the sending phase
-			if (SimEngine.getTime() > limit)
+			if (SimEngine.getTime() < limit)
 			{
 				time = 0;
 				//Send set amount of packets per second for each timerevent
