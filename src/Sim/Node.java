@@ -1,15 +1,15 @@
 package Sim;
 
+
 // This class implements a node (host) it has an address, a peer that it communicates with
 // and it count messages send and received.
 
 public class Node extends SimEnt {
-
 	private static int counter = 0;
 
-	private NetworkAddr _id;
-	private SimEnt _peer;
-	private int _sentmsg = 0;
+	protected NetworkAddr _id;
+	protected SimEnt _peer;
+	protected int _sentmsg = 0;
 	private int _seq = 0;
 	private int _stopSendingAfter = 0; //messages
 
@@ -61,19 +61,12 @@ public class Node extends SimEnt {
 			if (_stopSendingAfter > _sentmsg) {
 				_sentmsg++;
 				send(_peer, new Message(_id, new NetworkAddr(_toNetwork, _toHost), _seq), 0);
-				//send(_peer, new ExtendedMessage(_id, new NetworkAddr(_toNetwork, _toHost),_seq, SimEngine.getTime()),0);
 				send(this, new TimerEvent(), _timeBetweenSending);
 				this.printMsg("Sent message with seq: " + _seq + " at time " + SimEngine.getTime());
 				_seq++;
 			}
 		}
-/*
-		if (ev instanceof ExtendedMessage) {
-			((ExtendedMessage) ev).delay = SimEngine.getTime() - ((ExtendedMessage) ev).getTimestamp();
-			this.printMsg("Receives extended message with seq: "+((ExtendedMessage) ev).seq() + " at time "+SimEngine.getTime()+". Time to receive: "+((ExtendedMessage) ev).delay +". Average jitter of link: "+((ExtendedMessage) ev).getAvgJitter());
-		}
-*/
-		else if (ev instanceof Message) {
+		if (ev instanceof Message) {
 			this.printMsg("Receives message with seq: " + ((Message) ev).seq() + " at time " + SimEngine.getTime());
 		}
 	}

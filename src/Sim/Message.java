@@ -9,7 +9,7 @@ public class Message implements Event {
 	protected NetworkAddr _destination;
 	protected int _seq = 0;
 
-	protected Message(NetworkAddr from, NetworkAddr to, int seq) {
+	public Message(NetworkAddr from, NetworkAddr to, int seq) {
 		_source = from;
 		_destination = to;
 		_seq = seq;
