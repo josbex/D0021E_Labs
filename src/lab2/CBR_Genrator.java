@@ -16,10 +16,12 @@ public class CBR_Genrator extends Node {
 	private int _toNetwork;
 	private int _toHost;
 	private int _seq;
+	private TimeLogger timeLogger;
 	
 
 	public CBR_Genrator(int network, int node) {
 		super(network, node);	
+		this.timeLogger = new TimeLogger();
 	}
 
 
@@ -56,7 +58,8 @@ public class CBR_Genrator extends Node {
 				for(int i = 0; i < nrOfPackets; i++){
 					_sentmsg++;
 					send(_peer, new Message(_id, new NetworkAddr(_toNetwork, _toHost),_seq), time);
-					System.out.println("Node "+_id.networkId()+ "." + _id.nodeId() +" sent message with seq: "+_seq + " at time "+SimEngine.getTime());
+					System.out.println("Node "+_id.networkId()+ "." + _id.nodeId() +" sent message with seq: "+_seq + " at time "+SimEngine.getTime()+time);
+					timeLogger.logTime("CBR_Generator", SimEngine.getTime()+time);
 					_seq++;
 					time += 1/nrOfPackets;
 				}
