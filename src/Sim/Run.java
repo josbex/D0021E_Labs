@@ -1,6 +1,7 @@
 package Sim;
 import lab1.LossyLink;
-import lab2.Poisson_Generator;
+import lab2.PoissonGenerator;
+import lab2.CBRGenrator;
 import lab2.Sink;
 
 // An example of how to build a topology and starting the simulation engine
@@ -23,9 +24,8 @@ public class Run {
 		//Node host1 = new Node(1,1);
 		//Node host2 = new Node(2,1);
 		
-		//CBR_Genrator host1 = new CBR_Genrator(1,1);
 		
-		Poisson_Generator host1 = new Poisson_Generator(1,1);
+		PoissonGenerator host1 = new PoissonGenerator(1,1);
 		Sink host2 = new Sink(2,1);
 		
 
@@ -48,15 +48,19 @@ public class Run {
 		// Generate some traffic
 		// host1 will send 3 messages with time interval 5 to network 2, node 1. Sequence starts with number 1
 		//host1.StartSending(2, 2, 100, 5, 1); 
-
-		//CBR_generator sends 10 packets in the span of 5 seconds
-		//host1.StartSending(2, 2, 10, 5); 
 		
-		host1.StartSending(2, 2, 10, 5); 
-		
-
 		// host2 will send 2 messages with time interval 10 to network 1, node 1. Sequence starts with number 10
 		//host2.StartSending(1, 1, 2, 10, 10); 
+		
+
+		//CBRGenerator sends 10 packets in the span of 5 seconds
+		//host1.StartSending(2, 2, 10, 5); 
+		
+		//PoissonGenerator has runtime of 10 seconds and lambda value of 5
+		host1.StartSending(2, 2, 5.0, 10); 
+		
+
+
 
 		// Start the simulation engine and of we go!
 		Thread t = new Thread(SimEngine.instance());
