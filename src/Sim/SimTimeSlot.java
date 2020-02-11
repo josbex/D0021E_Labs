@@ -6,36 +6,33 @@ package Sim;
 
 
 class SimTimeSlot implements Comparable {
+	private static long _discriminator = 0;
 	double _msek;
 	long _resolver;
-	private static long _discriminator=0;
-	
-	SimTimeSlot(double msek) 
-	{
+
+	SimTimeSlot(double msek) {
 		_msek = msek;
 		_resolver = _discriminator;
 		_discriminator++;
-		
+
 	}
-	
-	// This method is called when an event is scheduled to be inserted into 
+
+	// This method is called when an event is scheduled to be inserted into
 	// the treeMap handled by the register method in the simulation engine.
-	
-	public int compareTo(Object obj)
-	{
+
+	public int compareTo(Object obj) {
 		SimTimeSlot other = (SimTimeSlot) obj;
-		
+
 		if (this._msek < other._msek)
 			return -1;
 		else if (this._msek > other._msek)
 			return +1;
-		else
-		{
+		else {
 			if (this._resolver < other._resolver)
 				return -1;
 			else if (this._resolver > other._resolver)
 				return +1;
-			else 
+			else
 				return 0;
 		}
 	}

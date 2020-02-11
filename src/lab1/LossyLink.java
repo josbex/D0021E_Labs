@@ -1,74 +1,64 @@
 package lab1;
+
+import ANSIColors.Color;
+import Sim.Event;
+import Sim.Link;
+import Sim.Message;
+import Sim.SimEnt;
+
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import Sim.Event;
-import Sim.SimEnt;
-import Sim.Link;
-import Sim.Message;
 
-public class LossyLink extends Link  {
-	
-	private static int counter = 0;
-	
-	private int id;
-	
-	private SimEnt _connectorA=null;
-	private SimEnt _connectorB=null;
-	
+public class LossyLink extends Link {
+
 	private ArrayList<Double> delays;
-	
+
 	private double delay, initialJitter, simulatedJitter, dropProb;
-	
-	public LossyLink(double delay, double jitter, double dropProb){
-		this.id = LossyLink.counter++;
+	private int packetsReceived, packetsDropped;
+
+	public LossyLink(double delay, double jitter, double dropProb) {
 		this.delay = delay;
 		this.initialJitter = jitter;
-		this.simulatedJitter = jitter;
 		this.dropProb = dropProb;
+
+		this.simulatedJitter = jitter;
+		this.packetsDropped = 0;
+		this.packetsReceived = 0;
 		this.delays = new ArrayList<Double>();
 	}
-	
-	public void setConnector(SimEnt connectTo)
-	{
-		if (_connectorA == null) 
-			_connectorA=connectTo;
-		else
-			_connectorB=connectTo;
-	}
-	
+
 	public void recv(SimEnt source, Event event) {
-		if (event instanceof Message)
-		{
+		this.packetsReceived++;
+		this.printMsg("Recv msg from [" + source.identifierString() + "] seq: " + ((Message) event).seq());
+		if (event instanceof Message) {
 			if (Math.random() < this.dropProb) {
-				System.out.println("Link recv msg, but drops it!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-				return;
-			}
-			System.out.println("Link recv msg, passes it through");
-			if (source == _connectorA)
-			{
-				send(_connectorB, event, calculateDelay());
-			}
-			else
-			{
-				send(_connectorA, event, calculateDelay());
+				this.packetsDropped++;
+				this.printMsg(Color.red("    DROP ") + "msg seq: " + ((Message) event).seq());
+			} else {
+				if (source == _connectorA) {
+					send(_connectorB, event, calculateDelay());
+					this.printMsg(Color.green("    PASS ") + "through to [" + _connectorB.identifierString() + "]");
+				} else {
+					send(_connectorA, event, calculateDelay());
+					this.printMsg(Color.green("    PASS ") + "through to [" + _connectorA.identifierString() + "]");
+				}
 			}
 		}
-		
 	}
-	
+
 	/*
 	 * Decides randomly what the delay will be within the range of the set delay +/- the initial jitter.
 	 */
-	private double calculateDelay(){
+	private double calculateDelay() {
 		double newDelay = this.delay + this.initialJitter * (2 * Math.random() - 1);
 		this.delays.add(newDelay);
 		writeDelayToFile(newDelay, currentJitter());
 		return newDelay;
 	}
-	
+
 	/*
 	 * Calculates what the jitter of the link is
 	 * by taking the difference between the most recent delay and the next most recent.
@@ -80,22 +70,23 @@ public class LossyLink extends Link  {
 			return this.initialJitter;
 		}
 	}
-	
+
 	/**
 	 * Writes each delay and jitter to a file as these values change.
-	 * @param delay : the calculated delay of the link
+	 *
+	 * @param delay  : the calculated delay of the link
 	 * @param jitter : the current jitter of the link, based on previous delays
 	 */
 	private void writeDelayToFile(double delay, double jitter) {
 		try {
-			BufferedWriter writer = new BufferedWriter(new FileWriter("delays" + id +".txt", true));
-			writer.append(delay + " " + jitter + "\n" );
+			BufferedWriter writer = new BufferedWriter(new FileWriter("delays_" + this._identifierString + ".txt", true));
+			writer.append(delay + " " + jitter + "\n");
 			writer.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public double averageDelay() {
 		double sum = 0.0;
 		for (double d : this.delays) {
@@ -104,4 +95,11 @@ public class LossyLink extends Link  {
 		return sum / this.delays.size();
 	}
 
+	public void printSummary() {
+		System.out.println(Color.blue(this._identifierString) + " Summary");
+		System.out.println("    " + "          Jitter: " + this.simulatedJitter);
+		System.out.printf("    " + " Dropped Packets: %d/%d (%.2f%%)\n", this.packetsDropped, this.packetsReceived,
+				100 * ((double) this.packetsDropped) / ((double) this.packetsReceived));
+		System.out.printf("    " + "   Average delay: %.2f\n", this.averageDelay());
+	}
 }

@@ -7,21 +7,18 @@ public class TableEntry {
 
 	private SimEnt _link;
 	private SimEnt _node;
-	
-	TableEntry(SimEnt link, SimEnt node)
-	{
-		_link=link;
-		_node=node;
+
+	TableEntry(SimEnt link, SimEnt node) {
+		_link = link;
+		_node = node;
 	}
-	
-	protected SimEnt link()
-	{
+
+	protected SimEnt link() {
 		return _link;
 	}
 
-	protected SimEnt node()
-	{
+	protected SimEnt node() {
 		return _node;
 	}
-	
+
 }
