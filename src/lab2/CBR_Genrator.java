@@ -10,7 +10,7 @@ import Sim.TimerEvent;
 
 public class CBR_Genrator extends Node {
 
-	private int time;
+	private double time;
 	private int nrOfPackets;
 	private int limit;
 	private int _toNetwork;
