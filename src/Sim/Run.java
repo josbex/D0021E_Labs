@@ -1,5 +1,6 @@
 package Sim;
 import lab1.LossyLink;
+import lab2.GaussianGenerator;
 import lab2.PoissonGenerator;
 import lab2.CBRGenrator;
 import lab2.Sink;
@@ -25,7 +26,8 @@ public class Run {
 		//Node host2 = new Node(2,1);
 		
 		
-		PoissonGenerator host1 = new PoissonGenerator(1,1);
+		//PoissonGenerator host1 = new PoissonGenerator(1,1);
+		GaussianGenerator host1 = new GaussianGenerator(1,1, 10, 5);
 		Sink host2 = new Sink(2,1);
 		
 
@@ -57,8 +59,12 @@ public class Run {
 		//host1.StartSending(2, 2, 10, 5); 
 		
 		//PoissonGenerator has runtime of 10 seconds and lambda value of 5
-		host1.StartSending(2, 2, 5.0, 10); 
-		
+		//host1.StartSending(2, 2, 5.0, 10);
+
+		//Gaussian test
+		host1.StartSending(2, 2, 10);
+
+
 
 
 
