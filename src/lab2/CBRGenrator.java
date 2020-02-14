@@ -11,6 +11,7 @@ public class CBRGenrator extends Node {
 	private int _toHost;
 	private int _seq;
 	private TimeLogger timeLogger;
+	private int timeInterval;
 
 
 	public CBRGenrator(int network, int node) {
@@ -25,9 +26,9 @@ public class CBRGenrator extends Node {
 	 * @param nrOfPackets: amount of packets sent per second during the sending phase
 	 * @param timeLimit:   how long the sending phase is
 	 */
-	public void StartSending(int network, int node, int nrOfPackets, int timeLimit) {
+	public void StartSending(int network, int node, int nrOfPackets, int timeInterval) {
 		this.nrOfPackets = nrOfPackets;
-		this.limit = timeLimit;
+		this.timeInterval = timeInterval;
 		_toNetwork = network;
 		_toHost = node;
 		_seq = 1;
@@ -40,21 +41,17 @@ public class CBRGenrator extends Node {
 
 	public void recv(SimEnt src, Event ev) {
 		if (ev instanceof TimerEvent) {
-			//Stop sending packets if it is not the sending phase
-			if (SimEngine.getTime() < limit) {
-				time = 0;
+
 				//Send set amount of packets per second for each timerevent
 				for (int i = 0; i < nrOfPackets; i++) {
 					_sentmsg++;
-					send(_peer, new Message(_id, new NetworkAddr(_toNetwork, _toHost), _seq), time);
-					System.out.println("Node " + _id.networkId() + "." + _id.nodeId() + " sent message with seq: " + _seq + " at time " + SimEngine.getTime() + time);
-					timeLogger.logTime("CBR_Generator", SimEngine.getTime() + time);
+					send(_peer, new Message(_id, new NetworkAddr(_toNetwork, _toHost), _seq), timeInterval);
+					this.printMsg(" sent message with seq: " + _seq + " at time " + SimEngine.getTime() + timeInterval);
+					timeLogger.logTime("CBR_Generator", timeInterval);
 					_seq++;
-					time += 1 / nrOfPackets;
+					
 				}
-				//next timerevent occurs after a second
-				send(this, new TimerEvent(), 1);
-			}
+
 		}
 		if (ev instanceof Message) {
 			System.out.println("Node " + _id.networkId() + "." + _id.nodeId() + " receives message with seq: " + ((Message) ev).seq() + " at time " + SimEngine.getTime());

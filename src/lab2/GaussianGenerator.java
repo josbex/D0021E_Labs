@@ -8,14 +8,14 @@ public class GaussianGenerator extends Node {
 
 	private Random u;
 	private TimeLogger timeLogger;
-	private int limit;
-	private int mean, standardDeviation;
+	private double mean, standardDeviation;
 
 	private int _toNetwork;
 	private int _toHost;
 	private int _seq;
+	private int nrOfPackets;
 
-	public GaussianGenerator(int network, int node, int mean, int standardDeviation) {
+	public GaussianGenerator(int network, int node, double mean, double standardDeviation) {
 		super(network, node);
 		u = new Random();
 		timeLogger = new TimeLogger();
@@ -24,8 +24,8 @@ public class GaussianGenerator extends Node {
 		this.standardDeviation = standardDeviation;
 	}
 
-	public void StartSending(int network, int node, int timeLimit) {
-		this.limit = timeLimit;
+	public void StartSending(int network, int node, int nrOfPackets) {
+		this.nrOfPackets = nrOfPackets;
 		this._toNetwork = network;
 		this._toHost = node;
 		_seq = 1;
@@ -34,23 +34,16 @@ public class GaussianGenerator extends Node {
 
 	public void recv(SimEnt src, Event ev) {
 		if (ev instanceof TimerEvent) {
-			//Stop sending packets if it is not the sending phase
-			if (SimEngine.getTime() < limit)
-			{
-				int nrOfPackets = gaussianInt();
-
 				//Send set amount of packets for each timerevent
 				for (int i = 0; i < nrOfPackets; i++) {
-					double randomDelay = Math.random();
+					double normalDelay = gaussianDouble();
 					_sentmsg++;
-					send(_peer, new Message(_id, new NetworkAddr(_toNetwork, _toHost),_seq), randomDelay);
+					send(_peer, new Message(_id, new NetworkAddr(_toNetwork, _toHost),_seq), normalDelay);
 					this.printMsg("Sent message with seq: " + _seq + " at time " + SimEngine.getTime());
-					timeLogger.logTime("Gaussian_Generator", (SimEngine.getTime() + randomDelay));
+					timeLogger.logTime("Gaussian_Generator", (normalDelay));
 					_seq++;
 				}
-				//next timerevent occurs after a second
-				send(this, new TimerEvent(), 1);
-			}
+			
 		}
 		if (ev instanceof Message)
 		{
@@ -59,8 +52,8 @@ public class GaussianGenerator extends Node {
 		}
 	}
 
-	private int gaussianInt() {
-		return (int) Math.round(this.mean + (u.nextGaussian() * this.standardDeviation) );
+	private double gaussianDouble() {
+		return this.mean + (u.nextGaussian() * this.standardDeviation);
 	}
 
 }

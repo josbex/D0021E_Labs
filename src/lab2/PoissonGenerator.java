@@ -23,13 +23,14 @@ public class PoissonGenerator extends Node {
 	public PoissonGenerator(int network, int node) {
 		super(network, node);
 		this.timeLogger = new TimeLogger();
+		this._identifierString = "POISSON_NODE " + _id.networkId() + "." + _id.nodeId();
 	}
 
-	public void StartSending(int network, int node,  double lambda, int timeLimit)
+	public void StartSending(int network, int node,  double lambda, int nrOfPackets)
 	{
 		this.lambda = lambda;
-		this.limit = timeLimit;
 		_toNetwork = network;
+		this.nrOfPackets = nrOfPackets ;
 		_toHost = node;
 		_seq = 1;
 		send(this, new TimerEvent(),0);	
@@ -43,23 +44,15 @@ public class PoissonGenerator extends Node {
 	{
 		if (ev instanceof TimerEvent)
 		{
-			//Stop sending packets if it is not the sending phase
-			if (SimEngine.getTime() < limit)
-			{
-				nrOfPackets = poissonDitribution(lambda);
+			//Send set amount of packets for each timerevent
+			for(int i = 0; i < nrOfPackets; i++){
 
-				//Send set amount of packets for each timerevent
-				for(int i = 0; i < nrOfPackets; i++){
-
-					double randomDelay = Math.random();
-					_sentmsg++;
-					send(_peer, new Message(_id, new NetworkAddr(_toNetwork, _toHost),_seq), randomDelay);
-					System.out.println("Node "+_id.networkId()+ "." + _id.nodeId() +" sent message with seq: "+_seq + " at time "+(SimEngine.getTime()+randomDelay));
-					timeLogger.logTime("Poisson_Generator", (SimEngine.getTime()+randomDelay));
-					_seq++;
-				}
-				//next timerevent occurs after a second
-				send(this, new TimerEvent(), 1);
+				double poissonDelay = poissonDitribution(lambda);
+				_sentmsg++;
+				send(_peer, new Message(_id, new NetworkAddr(_toNetwork, _toHost),_seq), poissonDelay);
+				this.printMsg("sent message with seq: "+_seq + " at time "+(SimEngine.getTime()+poissonDelay));
+				timeLogger.logTime("Poisson_Generator", (poissonDelay));
+				_seq++;
 			}
 		}
 		if (ev instanceof Message)

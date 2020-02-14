@@ -13,7 +13,7 @@ public class Sink extends Node {
 
 	public void recv(SimEnt src, Event ev) {
 		if (ev instanceof Message) {
-			System.out.println("Sink node " + _id.networkId() + "." + _id.nodeId() + " receives message with seq: " + ((Message) ev).seq() + " at time " + SimEngine.getTime());
+			this.printMsg("receives message with seq: " + ((Message) ev).seq() + " at time " + SimEngine.getTime());
 			timeLogger.logTime("Sink", SimEngine.getTime());
 		}
 	}

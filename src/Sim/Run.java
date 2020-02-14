@@ -26,8 +26,8 @@ public class Run {
 		//Node host2 = new Node(2,1);
 		
 		
-		//PoissonGenerator host1 = new PoissonGenerator(1,1);
-		GaussianGenerator host1 = new GaussianGenerator(1,1, 10, 5);
+		PoissonGenerator host1 = new PoissonGenerator(1,1);
+		//GaussianGenerator host1 = new GaussianGenerator(1,1, 10, 5);
 		Sink host2 = new Sink(2,1);
 		
 
@@ -55,14 +55,14 @@ public class Run {
 		//host2.StartSending(1, 1, 2, 10, 10); 
 		
 
-		//CBRGenerator sends 10 packets in the span of 5 seconds
+		//CBRGenerator sends 10 packets with a timeinterval of 5 seconds
 		//host1.StartSending(2, 2, 10, 5); 
 		
-		//PoissonGenerator has runtime of 10 seconds and lambda value of 5
-		//host1.StartSending(2, 2, 5.0, 10);
+		//PoissonGenerator has runtime of 10 packets and lambda value of 5
+		host1.StartSending(2, 2, 5.0, 10);
 
 		//Gaussian test
-		host1.StartSending(2, 2, 10);
+		//host1.StartSending(2, 2, 10);
 
 
 
