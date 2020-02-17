@@ -10,18 +10,18 @@ public class Node extends SimEnt {
 	protected NetworkAddr _id;
 	protected SimEnt _peer;
 	protected int _sentmsg = 0;
-	private int _seq = 0;
-	private int _stopSendingAfter = 0; //messages
+	protected int _seq = 0;
+	protected int _stopSendingAfter = 0; //messages
 
 
 	// Sets the peer to communicate with. This node is single homed
-	private int _timeBetweenSending = 10; //time between messages
-	private int _toNetwork = 0;
+	protected int _timeBetweenSending = 10; //time between messages
+	protected int _toNetwork = 0;
 
 	//**********************************************************************************
 	// Just implemented to generate some traffic for demo.
 	// In one of the labs you will create some traffic generators
-	private int _toHost = 0;
+	protected int _toHost = 0;
 
 	public Node(int network, int node) {
 		super();

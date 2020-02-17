@@ -4,15 +4,15 @@ package Sim;
 
 public class Router extends SimEnt {
 
-	private static int counter = 0;
+	protected static int counter = 0;
 
-	private RouteTableEntry[] _routingTable;
-	private int _interfaces;
-	private int _now = 0;
+	protected RouteTableEntry[] _routingTable;
+	protected int _interfaces;
+	protected int _now = 0;
 
 	// When created, number of interfaces are defined
 
-	Router(int interfaces) {
+	protected Router(int interfaces) {
 		_routingTable = new RouteTableEntry[interfaces];
 		_interfaces = interfaces;
 
@@ -37,7 +37,7 @@ public class Router extends SimEnt {
 	// the network number in the destination field of a messages. The link
 	// represents that network number is returned
 
-	private SimEnt getInterface(int networkAddress) {
+	protected SimEnt getInterface(int networkAddress) {
 		SimEnt routerInterface = null;
 		for (int i = 0; i < _interfaces; i++)
 			if (_routingTable[i] != null) {
@@ -57,7 +57,7 @@ public class Router extends SimEnt {
 			SimEnt sendNext = getInterface(((Message) event).destination().networkId());
 			this.printMsg("Sends to node: " + ((Message) event).destination().networkId() + "." + ((Message) event).destination().nodeId());
 			send(sendNext, event, _now);
-
 		}
 	}
 }
+
