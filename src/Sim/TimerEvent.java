@@ -7,4 +7,7 @@ package Sim;
 public class TimerEvent implements Event {
 	public void entering(SimEnt locale) {
 	}
+	public String getNameofEvent(){
+		return "TimerEvent";
+	}
 }

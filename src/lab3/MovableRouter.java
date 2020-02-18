@@ -12,13 +12,15 @@ public class MovableRouter extends Router{
 
 	public MovableRouter(int interfaces) {
 		super(interfaces);
+		this._identifierString = "MOVABLE_ROUTER " + Router.counter;
 	}
 	
 	
 	public void recv(SimEnt source, Event event) {
+		//System.out.println(event.getNameofEvent());
 		if(event instanceof SwitchRouterEvent){ //Event is sent out but never recieved?
 			//printRouterTable();
-			System.out.println("Switch event was recieved!!!!!!!!");
+			this.printMsg("Switch event was recieved!!!!!!!!");
 			switchRouterInterface(((SwitchRouterEvent) event).getSourceAddr(), ((SwitchRouterEvent) event).getNewRouterInterface());
 		}
 		if (event instanceof Message) {
@@ -26,11 +28,12 @@ public class MovableRouter extends Router{
 			SimEnt sendNext = getInterface(((Message) event).destination().networkId());
 			this.printMsg("Sends to node: " + ((Message) event).destination().networkId() + "." + ((Message) event).destination().nodeId());
 			send(sendNext, event, _now);
+			printRouterTable();
+			switchRouterInterface(((Message) event).source(), 4);
 		}
 	}
 	
 	private void switchRouterInterface(NetworkAddr sourceAddr, int newRouterInterface){
-
 		if(_routingTable[newRouterInterface] != null){
 			System.out.println("Selected interface not available!");
 			return;
@@ -40,9 +43,9 @@ public class MovableRouter extends Router{
 				RouteTableEntry oldEntry = _routingTable[i];
 				_routingTable[i] = null;
 				_routingTable[newRouterInterface] = oldEntry;
+				break;
 			}
 		}
-		System.out.println("Switch occured!");
 		printRouterTable();
 	}
 	

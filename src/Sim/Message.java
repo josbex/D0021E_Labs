@@ -26,6 +26,10 @@ public class Message implements Event {
 	public int seq() {
 		return _seq;
 	}
+	
+	public String getNameofEvent(){
+		return "MessageEvent";
+	}
 
 	public void entering(SimEnt locale) {
 	}

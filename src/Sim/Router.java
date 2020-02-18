@@ -1,5 +1,7 @@
 package Sim;
 
+import lab3.SwitchRouterEvent;
+
 // This class implements a simple router
 
 public class Router extends SimEnt {

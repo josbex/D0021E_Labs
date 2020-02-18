@@ -31,6 +31,7 @@ public class Run {
 		//PoissonGenerator host1 = new PoissonGenerator(1,1);
 		//GaussianGenerator host1 = new GaussianGenerator(1,1, 10, 5);
 		//Sink host2 = new Sink(2,1);
+		
 		MobileNode host1 = new MobileNode(1, 1, 2, 4);
 		MobileNode host2 = new MobileNode(2, 1, 3, 2);
 		

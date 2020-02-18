@@ -34,6 +34,7 @@ public final class SimEngine implements Runnable {
 	public EventHandle register(SimEnt registrator, SimEnt target, Event event, double delayedExecution) {
 		double scheduleForTime = getTime() + delayedExecution;
 		EventHandle handle = new EventHandle(registrator, target, event, new SimTimeSlot(scheduleForTime));
+		//System.out.println("Adding event of type: " + event.getNameofEvent() + " to the list.");
 		_simTimeTree.put(handle._simSlot, handle);
 		return handle;
 	}
@@ -80,6 +81,7 @@ public final class SimEngine implements Runnable {
 				_simTime = nextEventToExecute._msek;
 				handleToNextEvent._event.entering(handleToNextEvent._target);
 				handleToNextEvent._target.recv(handleToNextEvent._registrator, handleToNextEvent._event);
+				//System.out.println("Next event handled: " + handleToNextEvent._event.getNameofEvent());
 				deregister(handleToNextEvent);
 			}
 		} while (!_quit);

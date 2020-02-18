@@ -7,5 +7,7 @@ package Sim;
 
 public interface Event {
 	void entering(SimEnt locale);
+
+	String getNameofEvent();
 }
 

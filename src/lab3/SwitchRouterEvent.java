@@ -14,6 +14,10 @@ public class SwitchRouterEvent implements Event {
 		this.newRouterInterface = newRouterInterface;
 	}
 	
+	public String getNameofEvent(){
+		return "SwitchRouterEvent";
+	}
+	
 	public NetworkAddr getSourceAddr(){
 		return sourceAddr;
 	}

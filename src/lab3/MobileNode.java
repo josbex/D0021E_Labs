@@ -29,12 +29,13 @@ public class MobileNode extends Node {
 				send(this, new TimerEvent(), _timeBetweenSending);
 				this.printMsg("Sent message with seq: " + _seq + " at time " + SimEngine.getTime());
 				_seq++;
-			}
-			if(_sentmsg == changeAfterNrPkts){
-				send(_peer, new SwitchRouterEvent(_id, newRouterInterface), 0);
-				System.out.println("SwitchEvent was sent!!!!!!!!!!!");
+				if(_sentmsg == changeAfterNrPkts){
+					send(_peer, new SwitchRouterEvent(_id, newRouterInterface), 0);
+					this.printMsg("SwitchEvent was sent!!!!!!!!!!!");
+				}
 			}
 		}
+
 		if (ev instanceof Message) {
 			this.printMsg("Receives message with seq: " + ((Message) ev).seq() + " at time " + SimEngine.getTime());
 		}
