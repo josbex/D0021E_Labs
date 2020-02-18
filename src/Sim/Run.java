@@ -58,7 +58,7 @@ public class Run {
 
 		// Generate some traffic
 		// host1 will send 10 messages with time interval 5 to network 2, node 1. Sequence starts with number 1
-		routeNode.printRouterTable();
+		routeNode.printRouterTable("Intial routing table");
 		host1.StartSending(2, 2, 10, 5, 1); 
 		
 		// host2 will send 8 messages with time interval 10 to network 1, node 1. Sequence starts with number 10
