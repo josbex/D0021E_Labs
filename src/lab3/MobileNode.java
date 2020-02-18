@@ -1,5 +1,6 @@
 package lab3;
 
+import ANSIColors.Color;
 import Sim.Event;
 import Sim.Message;
 import Sim.NetworkAddr;
@@ -31,7 +32,7 @@ public class MobileNode extends Node {
 				_seq++;
 				if(_sentmsg == changeAfterNrPkts){
 					send(_peer, new SwitchRouterEvent(_id, newRouterInterface), 0);
-					this.printMsg("SwitchEvent was sent!!!!!!!!!!!");
+					this.printMsg(Color.blue("SWITCH EVENT SENT"));
 				}
 			}
 		}

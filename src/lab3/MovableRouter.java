@@ -1,5 +1,6 @@
 package lab3;
 
+import ANSIColors.Color;
 import Sim.Event;
 import Sim.Message;
 import Sim.NetworkAddr;
@@ -20,7 +21,7 @@ public class MovableRouter extends Router{
 		//System.out.println(event.getNameofEvent());
 		if(event instanceof SwitchRouterEvent){ //Event is sent out but never recieved?
 			//printRouterTable();
-			this.printMsg("Switch event was recieved!!!!!!!!");
+			this.printMsg(Color.green("SWITCH EVENT RECV"));
 			switchRouterInterface(((SwitchRouterEvent) event).getSourceAddr(), ((SwitchRouterEvent) event).getNewRouterInterface());
 		}
 		if (event instanceof Message) {
@@ -29,17 +30,18 @@ public class MovableRouter extends Router{
 			this.printMsg("Sends to node: " + ((Message) event).destination().networkId() + "." + ((Message) event).destination().nodeId());
 			send(sendNext, event, _now);
 			printRouterTable();
-			switchRouterInterface(((Message) event).source(), 4);
+			//switchRouterInterface(((Message) event).source(), 4);
 		}
 	}
 	
 	private void switchRouterInterface(NetworkAddr sourceAddr, int newRouterInterface){
 		if(_routingTable[newRouterInterface] != null){
-			System.out.println("Selected interface not available!");
+			this.printMsg(Color.red("ERR:") + " Selected interface not available!");
 			return;
 		}
-		for ( int i  = 0; i < _interfaces; i++){
-			if(((Node)_routingTable[i].node()).getAddr() == sourceAddr){
+		for ( int i  = 0; i < _interfaces; i++) {
+			RouteTableEntry route = _routingTable[i];
+			if (route != null && ((Node) route.node()).getAddr() == sourceAddr) {
 				RouteTableEntry oldEntry = _routingTable[i];
 				_routingTable[i] = null;
 				_routingTable[newRouterInterface] = oldEntry;
@@ -49,11 +51,11 @@ public class MovableRouter extends Router{
 		printRouterTable();
 	}
 	
-	public void printRouterTable(){
-		for(int i = 0; i<_routingTable.length; i++){
-			if(_routingTable[i] != null){
+	public void printRouterTable() {
+		for(int i = 0; i<_routingTable.length; i++) {
+			if (_routingTable[i] != null) {
 				System.out.println("Entry " + i + ": " + ((Node)_routingTable[i].node()).identifierString());
-			}else{
+			} else {
 				System.out.println("Entry " + i + ": --");
 			}
 		}
