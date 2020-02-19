@@ -1,6 +1,7 @@
 package lab2;
 
 
+import java.sql.Time;
 import java.util.Random;
 import Sim.Event;
 import Sim.Message;
@@ -20,20 +21,20 @@ public class PoissonGenerator extends Node {
 	private int _seq;
 	private TimeLogger timeLogger;
 
-	public PoissonGenerator(int network, int node) {
+	public PoissonGenerator(int network, int node, double lambda) {
 		super(network, node);
 		this.timeLogger = new TimeLogger();
 		this._identifierString = "POISSON_NODE " + _id.networkId() + "." + _id.nodeId();
+		this.lambda = lambda;
 	}
 
-	public void StartSending(int network, int node,  double lambda, int nrOfPackets)
+	public void StartSending(int network, int node, int nrOfPackets)
 	{
-		this.lambda = lambda;
 		_toNetwork = network;
 		this.nrOfPackets = nrOfPackets ;
 		_toHost = node;
 		_seq = 1;
-		send(this, new TimerEvent(),0);	
+		send(this, new TimerEvent(), poissonDistribution());
 	}
 
 	//**********************************************************************************	
@@ -42,14 +43,13 @@ public class PoissonGenerator extends Node {
 
 	public void recv(SimEnt src, Event ev)
 	{
-		if (ev instanceof TimerEvent)
-		{
+		if (ev instanceof TimerEvent) {
 			//Send set amount of packets for each timerevent
-			for(int i = 0; i < nrOfPackets; i++){
-
-				double poissonDelay = poissonDitribution(lambda);
+			if (this._sentmsg < this.nrOfPackets) {
+				double poissonDelay = poissonDistribution();
 				_sentmsg++;
-				send(_peer, new Message(_id, new NetworkAddr(_toNetwork, _toHost),_seq), poissonDelay);
+				send(_peer, new Message(_id, new NetworkAddr(_toNetwork, _toHost),_seq), 0);
+				send(this, new TimerEvent(), poissonDelay);
 				this.printMsg("sent message with seq: "+_seq + " at time "+(SimEngine.getTime()+poissonDelay));
 				timeLogger.logTime("Poisson_Generator", (poissonDelay));
 				_seq++;
@@ -62,12 +62,12 @@ public class PoissonGenerator extends Node {
 		}
 	}
 
-	//Knuths algorithm for generating a poisson distrubuted random variable.
-	//Taken from https://en.wikipedia.org/wiki/Poisson_distribution#Generating_Poisson-distributed_random_variables
-	private int poissonDitribution(double lambda) {
-		//Uses ranodm istead of math.randon to get uniform distributed values.
+	// Knuths algorithm for generating a poisson distributed random variable.
+	// Taken from https://en.wikipedia.org/wiki/Poisson_distribution#Generating_Poisson-distributed_random_variables
+	private int poissonDistribution() {
+		//Uses random instead of math.random to get uniform distributed values.
 		Random u = new Random();
-		double L = Math.exp(-lambda);
+		double L = Math.exp(-this.lambda);
 		int k = 0;
 		double p = 1.0;
 		while (p >= L){

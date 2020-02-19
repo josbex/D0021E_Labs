@@ -1,8 +1,7 @@
 package Sim;
-import lab1.LossyLink;
 import lab2.GaussianGenerator;
+import lab2.CBRGenerator;
 import lab2.PoissonGenerator;
-import lab2.CBRGenrator;
 import lab2.Sink;
 
 // An example of how to build a topology and starting the simulation engine
@@ -24,9 +23,10 @@ public class Run {
 		// communicating via the router
 		//Node host1 = new Node(1,1);
 		//Node host2 = new Node(2,1);
-		
-		
-		PoissonGenerator host1 = new PoissonGenerator(1,1);
+
+
+		CBRGenerator host1 = new CBRGenerator(1,1, 5);
+		//PoissonGenerator host1 = new PoissonGenerator(1, 1, 5.0);
 		//GaussianGenerator host1 = new GaussianGenerator(1,1, 10, 5);
 		Sink host2 = new Sink(2,1);
 		
@@ -55,11 +55,11 @@ public class Run {
 		//host2.StartSending(1, 1, 2, 10, 10); 
 		
 
-		//CBRGenerator sends 10 packets with a timeinterval of 5 seconds
-		//host1.StartSending(2, 2, 10, 5); 
+		//CBRGenerator sends 10000 packets with a timeinterval of 5 seconds
+		host1.StartSending(2, 1, 10000);
 		
 		//PoissonGenerator has runtime of 10 packets and lambda value of 5
-		host1.StartSending(2, 2, 5.0, 10);
+		//host1.StartSending(2, 2, 5.0, 10);
 
 		//Gaussian test
 		//host1.StartSending(2, 2, 10);
