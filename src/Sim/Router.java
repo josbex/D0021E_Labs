@@ -1,6 +1,5 @@
 package Sim;
 
-import lab3.SwitchRouterEvent;
 
 // This class implements a simple router
 
