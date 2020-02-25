@@ -36,15 +36,19 @@ public class GaussianGenerator extends Node {
 		if (ev instanceof TimerEvent) {
 				//Send set amount of packets for each TimerEvent
 				if (this._sentmsg < this.nrOfPackets) {
-					double normalDelay = gaussianDouble();
-					_sentmsg++;
 					send(_peer, new Message(_id, new NetworkAddr(_toNetwork, _toHost),_seq), 0);
+
+					double normalDelay;
+					do {
+						_sentmsg++;
+						normalDelay = gaussianDouble();
+					} while (normalDelay < 0.0); // Throw away event if negative delay
+
 					send(this, new TimerEvent(), normalDelay);
 					this.printMsg("Sent message with seq: " + _seq + " at time " + SimEngine.getTime());
 					timeLogger.logTime("Gaussian_Generator", (normalDelay));
 					_seq++;
 				}
-			
 		}
 		if (ev instanceof Message)
 		{

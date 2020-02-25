@@ -25,9 +25,9 @@ public class Run {
 		//Node host2 = new Node(2,1);
 
 
-		CBRGenerator host1 = new CBRGenerator(1,1, 5);
+		//CBRGenerator host1 = new CBRGenerator(1,1, 5);
 		//PoissonGenerator host1 = new PoissonGenerator(1, 1, 5.0);
-		//GaussianGenerator host1 = new GaussianGenerator(1,1, 10, 5);
+		GaussianGenerator host1 = new GaussianGenerator(1,1, 15, 5);
 		Sink host2 = new Sink(2,1);
 		
 
