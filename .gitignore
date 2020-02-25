@@ -139,3 +139,9 @@ fabric.properties
 
 # OSX
 .DS_Store
+
+__pycache__/
+
+plots/Makefile
+plots/run.sh
+plots/venv
