@@ -21,4 +21,5 @@ public class NetworkAddr {
 	public int nodeId() {
 		return _nodeId;
 	}
+
 }

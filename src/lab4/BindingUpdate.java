@@ -1,16 +1,16 @@
 package lab4;
 
 import Sim.Event;
-import Sim.NetworkAddr;
 import Sim.SimEnt;
-import lab3.MobileNode;
+
 
 public class BindingUpdate implements Event {
 	
-	private NetworkAddr foreignAddress;
-	
-	public BindingUpdate(MobileNode node, NetworkAddr foreignAddress) {
-		this.foreignAddress = foreignAddress;
+	private AgentRouter HA;
+
+	public BindingUpdate(AgentRouter homeAgent) {
+		this.HA = homeAgent;
+
 	}
 
 	public void entering(SimEnt locale) {
@@ -22,8 +22,9 @@ public class BindingUpdate implements Event {
 		return "Binding Update Event";
 	}
 	
-	public NetworkAddr getForeignAddress() {
-		return this.foreignAddress;
+	public AgentRouter getHA() {
+		return this.HA;
 	}
-
+	
+	
 }
