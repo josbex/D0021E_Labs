@@ -68,6 +68,7 @@ public class AgentRouter extends MovableRouter {
 			SimEnt sendNext = getInterface(dest.networkId());
 			this.printMsg("Sends to node: " + dest.networkId() + "." + dest.nodeId());
 			send(sendNext, event, _now);
+			printRouterTable("RoutingTable for router: " + ((Message) event).source().networkId());
 		}
 	}
 	
@@ -83,6 +84,17 @@ public class AgentRouter extends MovableRouter {
 		return routerInterface;
 	}
 	*/
+	
+	public void printRouterTable(String msg) {
+		System.out.println(msg);
+		for(int i = 0; i<_routingTable.length; i++) {
+			if (_routingTable[i] != null) {
+				System.out.println("Entry " + i + ": " + ((Node)_routingTable[i].node()).identifierString());
+			} else {
+				System.out.println("Entry " + i + ": --");
+			}
+		}
+	}
 	
 	public int getNetworkAddr() {
 		return _id.networkId();
