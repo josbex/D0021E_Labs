@@ -145,3 +145,4 @@ __pycache__/
 plots/Makefile
 plots/run.sh
 plots/venv
+*.eps

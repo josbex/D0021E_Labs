@@ -13,9 +13,12 @@ def scatterplot(infile, outfile):
     #fig.suptitle('No axes on this figure')  # Add a title so we know which it is
 
     fig, ax = pyplot.subplots(figsize = figsize)
-    data = numpy.asarray([float(line) for line in open(infile, "r").readlines()])
+    if infile is not None:
+        data = numpy.asarray([float(line) for line in open(infile, "r").readlines()])
+    else:
+        data = numpy.asarray([5.0 for i in range(1, 10001)])
 
-    seaborn.scatterplot(data = data, ax = ax, s = 10, linewidth = .01)
+    seaborn.scatterplot(data = data, ax = ax, s = 5, linewidth = 0)
 
     seaborn.set_style("whitegrid")
     ax.xaxis.grid(False)
@@ -58,7 +61,10 @@ def probplot(infile, outfile):
 
 def distplot(infile, outfile):
     fig, ax = pyplot.subplots(figsize = figsize)
-    data = numpy.asarray([float(line) for line in open(infile, "r").readlines()])
+    if infile is not None:
+        data = numpy.asarray([float(line) for line in open(infile, "r").readlines()])
+    else:
+        data = numpy.asarray([5.0 for i in range(1, 10001)])
 
     seaborn.distplot(a = data)
 
@@ -70,7 +76,11 @@ def distplot(infile, outfile):
 
 #probplot("Gaussian_Generator.txt", "/tmp/file.png")
 #probplot("Poisson_Generator.txt", "/tmp/file.png")
+scatterplot(None,                       "cbr-scatter.eps")
+distplot(None,                          "cbr-dist.eps")
+
 scatterplot("Poisson_Generator.txt",    "poisson-scatter.eps")
-scatterplot("Gaussian_Generator.txt",   "gauss-scatter.eps")
 distplot("Poisson_Generator.txt",       "poisson-dist.eps")
+
+scatterplot("Gaussian_Generator.txt",   "gauss-scatter.eps")
 distplot("Gaussian_Generator.txt",      "gauss-dist.eps")
