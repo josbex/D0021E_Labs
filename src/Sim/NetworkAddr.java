@@ -21,5 +21,19 @@ public class NetworkAddr {
 	public int nodeId() {
 		return _nodeId;
 	}
+	
+	@Override
+	public boolean equals(Object o) {
+		NetworkAddr temp = (NetworkAddr)o;
+		return (this._networkId == temp._networkId) && (this._nodeId == temp._nodeId);
+	}
+	
+	@Override
+	public int hashCode() {
+		int hashcode = 23;
+		hashcode = (hashcode * 37) + _networkId;
+		hashcode = (hashcode * 37) + _nodeId;
+		return hashcode;
+	}
 
 }
