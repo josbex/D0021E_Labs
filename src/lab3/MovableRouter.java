@@ -18,10 +18,9 @@ public class MovableRouter extends Router{
 	
 	
 	public void recv(SimEnt source, Event event) {
-		//System.out.println(event.getNameofEvent());
-		if(event instanceof SwitchRouterEvent){ //Event is sent out but never recieved?
+		if(event instanceof SwitchRouterEvent){
 			this.printMsg(Color.green("SWITCH EVENT RECV"));
-			printRouterTable("Routing table before switch");
+			//printRouterTable("Routing table before switch");
 			switchRouterInterface(((SwitchRouterEvent) event).getSourceAddr(), ((SwitchRouterEvent) event).getNewRouterInterface());
 		}
 		if (event instanceof Message) {
@@ -43,10 +42,11 @@ public class MovableRouter extends Router{
 				RouteTableEntry oldEntry = _routingTable[i];
 				_routingTable[i] = null;
 				_routingTable[newRouterInterface] = oldEntry;
+				this.printMsg(route.node().identifierString() + " is now on interface " + newRouterInterface);
 				break;
 			}
 		}
-		printRouterTable("Routing table after switch");
+		//printRouterTable("Routing table after switch");
 	}
 	
 	public void printRouterTable(String msg) {
