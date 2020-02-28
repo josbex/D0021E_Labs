@@ -53,31 +53,61 @@ public class AgentRouter extends SimEnt {
 	
 	public void setReroute(NetworkAddr hoa, NetworkAddr coa){
 		reroutes.put(hoa, coa);
+		routingTable.put(coa, routingTable.get(new NetworkAddr(coa.networkId(), 0)));
 	}
 
 	public void recv(SimEnt source, Event event) {
+		//this.printMsg("Source: " + source.identifierString());
 		if (event instanceof BindingUpdate) {
-			NetworkAddr hoa = ((MIPNode) source).getHoA();
-			//New router hands host a new network address, a care of address.
-			((MIPNode) source).setNodeID(new NetworkAddr(_id.networkId(), getAvailableAddr()));
-			NetworkAddr coa = ((MIPNode) source).getAddr();
-			this.printMsg("NODE (" + hoa.networkId() + "." + hoa.nodeId() + ") is now NODE (" + coa.networkId() + "." + coa.nodeId() + ")");
-			//Connect the host to a interface of the new router.
-			IdealLink newLink = new IdealLink();
-			((MIPNode) source).setPeer(newLink);
-			int slot = getAvailableInterface();
-			if(slot != -1){
-				connectInterface(slot, newLink, hoa);
-				//Update the rerouting table of the Home agent.
-				AgentRouter HA = ((BindingUpdate) event).getHA();
-				HA.setReroute(hoa,coa);
+			NetworkAddr hoa = ((BindingUpdate) event).getHoA();
+			NetworkAddr coa = ((BindingUpdate) event).getCoA();
+			
+			if (hoa.networkId() == this._id.networkId()) {
+				this.setReroute(hoa, coa);
+				this.printMsg("BINDING Message: Node " + hoa.toString() + " to " + coa.toString());
+			} else {
+				send(interfaces[routingTable.get(new NetworkAddr(hoa.networkId(), 0))], event, 0);
 			}
-			else{
-				this.printMsg("No available interfaces!");
-			}	
+			printRouterTable("RoutingTable for router: " + this.identifierString());
+	
+			//New router hands host a new network address, a care of address.
+			// TODO Set node id with message
+			//((MIPNode) source).setNodeID(new NetworkAddr(_id.networkId(), getAvailableAddr()));
+			//NetworkAddr coa = ((BindingUpdate) event).getCoA();
+			//this.printMsg("NODE (" + hoa.networkId() + "." + hoa.nodeId() + ") is now NODE (" + coa.networkId() + "." + coa.nodeId() + ")");
+			//Connect the host to a interface of the new router.
+			//IdealLink newLink = new IdealLink();
+			//((MIPNode) source).setPeer(newLink);
+			//int slot = getAvailableInterface();
+			//if(slot != -1){
+			//	connectInterface(slot, newLink, hoa);
+				//Update the rerouting table of the Home agent.
+				//AgentRouter HA = ((BindingUpdate) event).getHA();
+				//HA.setReroute(hoa,coa);
+			//}
+			//else{
+			//	this.printMsg("No available interfaces!");
+			//}	
+		}
+		if (event instanceof WrappedMessage) {
+			if (((WrappedMessage) event).getDestination() == _id) {
+				NetworkAddr wrappedDest = ((WrappedMessage) event).getWrapped().destination();
+				send(
+						getInterface(wrappedDest),
+						((WrappedMessage) event).getWrapped(),
+						_now
+				);
+				this.printMsg("Unwrapping message to " + wrappedDest.toString());
+			} else {
+				NetworkAddr dest = ((WrappedMessage) event).getDestination();
+				SimEnt sendNext = getInterface(dest);
+				this.printMsg("Sends WRAPPED to node: " + dest.toString());
+				send(sendNext, event, _now);
+			}
 		}
 		if (event instanceof Message) {
 			Message  msg = (Message) event;
+			Event sendEvent = event;
 			//Get the intended destination of the message, check if that host has moved, 
 			//in that case forward msg to the care of address of the host.
 			NetworkAddr dest = msg.destination();
@@ -85,12 +115,13 @@ public class AgentRouter extends SimEnt {
 			if(coa != null){
 				this.printMsg("Forwarding message to foreign host (" + coa.networkId() +"." +coa.nodeId() + ")");
 				dest = coa;
+				sendEvent = new WrappedMessage(this._id, dest, msg);
 			}
 			this.printMsg("Handles packet with seq: " + ((Message) event).seq() + " from node: " + ((Message) event).source().networkId() + "." + ((Message) event).source().nodeId());
 			SimEnt sendNext = getInterface(dest);
-			this.printMsg("Sends to node: " + dest.networkId() + "." + dest.nodeId());
-			send(sendNext, event, _now);
-			printRouterTable("RoutingTable for router: " + ((Message) event).source().networkId());
+			this.printMsg("Sends to node: " + dest.toString());
+			send(sendNext, sendEvent, _now);
+			printRouterTable("RoutingTable for router: " + this.identifierString());
 		}
 	}
 	
@@ -155,7 +186,7 @@ public class AgentRouter extends SimEnt {
 		return -1;
 	}
 	
-	public int getAvailableAddr(){
+	public NetworkAddr getAvailableAddr(){
 		int[] takenAddrs = new int[routingTable.size()];
 		int j = 0;
 		for (Map.Entry<NetworkAddr, Integer> entry : routingTable.entrySet()) {
@@ -163,7 +194,7 @@ public class AgentRouter extends SimEnt {
 			j++;
 		}
 		Arrays.sort(takenAddrs);
-		return takenAddrs[takenAddrs.length-1]+1;
+		return new NetworkAddr(this._id.networkId(), takenAddrs[takenAddrs.length-1]+1);
 	}
 	
 	public NetworkAddr getAddr() {
