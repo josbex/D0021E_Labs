@@ -1,32 +1,54 @@
 package lab4;
 
 import java.util.Arrays;
+
 import java.util.HashMap;
+import java.util.Map;
 
 import ANSIColors.Color;
 import Sim.Event;
 import Sim.IdealLink;
+import Sim.Link;
 import Sim.Message;
 import Sim.NetworkAddr;
 import Sim.Node;
 import Sim.RouteTableEntry;
+//import Sim.RouteTableEntry;
 import Sim.Router;
 import Sim.SimEnt;
 import lab3.MobileNode;
 import lab3.MovableRouter;
 import lab3.SwitchRouterEvent;
 
-public class AgentRouter extends MovableRouter {
+public class AgentRouter extends SimEnt {
 
+	private int _now = 0;
+	
+	private static int counter;
 	protected NetworkAddr _id;
 	private HashMap<NetworkAddr, NetworkAddr> reroutes;
+	private HashMap<NetworkAddr, Integer> routingTable;
+	private Link[] interfaces;
+	//protected Lab4RouteTableEntry[] _routingTable;
 	
-	public AgentRouter(int interfaces, int network, int address) {
-		super(interfaces);
+	public AgentRouter(int interfaceNumber, int network, int address) {
+		//super(interfaces);
 		this._id = new NetworkAddr(network, address);
 		//this._id = new NetworkAddr(Router.counter, 0);
 		reroutes = new HashMap<NetworkAddr, NetworkAddr>();
-		this._identifierString = "AGENTROUTER " + Router.counter;
+		interfaces = new Link[interfaceNumber];
+		routingTable = new HashMap<NetworkAddr, Integer>();
+		this._identifierString = "AGENTROUTER " + AgentRouter.counter++;
+	}
+	
+	public void connectInterface(int interfaceNumber, Link link, NetworkAddr route) {
+		if (interfaceNumber < interfaces.length) {
+			interfaces[interfaceNumber] = link;
+			routingTable.put(route, interfaceNumber);
+		} else
+			this.printMsg("Trying to connect to port not in router");
+
+		link.setConnector(this);
 	}
 	
 	public void setReroute(NetworkAddr hoa, NetworkAddr coa){
@@ -45,7 +67,7 @@ public class AgentRouter extends MovableRouter {
 			((MIPNode) source).setPeer(newLink);
 			int slot = getAvailableInterface();
 			if(slot != -1){
-				connectInterface(slot, newLink, (MIPNode) source);
+				connectInterface(slot, newLink, hoa);
 				//Update the rerouting table of the Home agent.
 				AgentRouter HA = ((BindingUpdate) event).getHA();
 				HA.setReroute(hoa,coa);
@@ -65,7 +87,7 @@ public class AgentRouter extends MovableRouter {
 				dest = coa;
 			}
 			this.printMsg("Handles packet with seq: " + ((Message) event).seq() + " from node: " + ((Message) event).source().networkId() + "." + ((Message) event).source().nodeId());
-			SimEnt sendNext = getInterface(dest.networkId());
+			SimEnt sendNext = getInterface(dest);
 			this.printMsg("Sends to node: " + dest.networkId() + "." + dest.nodeId());
 			send(sendNext, event, _now);
 			printRouterTable("RoutingTable for router: " + ((Message) event).source().networkId());
@@ -73,26 +95,50 @@ public class AgentRouter extends MovableRouter {
 	}
 	
 	/*
-	protected SimEnt getInterface(NetworkAddr addr) {
-		SimEnt routerInterface = null;
+	public void updateRoutingTable(int interfaceNumber, SimEnt link, MIPNode node) {
+		if (interfaceNumber < _interfaces) {
+			_routingTable[interfaceNumber] = new RouteTableEntry(link, node);
+		} else
+			this.printMsg("Trying to connect to port not in router");
+
+		((Link) link).setConnector(this);
+	}
+	
+	protected MIPNode getNode(NetworkAddr addr){
+		MIPNode routerInterface = null;
 		for (int i = 0; i < _interfaces; i++)
 			if (_routingTable[i] != null) {
 				if (((MIPNode) _routingTable[i].node()).getAddr().networkId() == addr.networkId() && ((MIPNode) _routingTable[i].node()).getAddr().nodeId() == addr.nodeId()) {
-					routerInterface = _routingTable[i].link();
+					routerInterface = (MIPNode)_routingTable[i].node();
 				}
 			}
 		return routerInterface;
-	}
+	}	
 	*/
+	protected SimEnt getInterface(NetworkAddr addr) {
+		SimEnt routerInterface = null;
+		NetworkAddr coa = reroutes.get(addr);
+		Integer interfaceNumber;
+		if (coa != null)
+			interfaceNumber = routingTable.get(coa);
+		else
+			interfaceNumber = routingTable.get(addr);
+		
+		if (interfaceNumber != null) {
+			routerInterface = interfaces[interfaceNumber];
+		} else {
+			this.printMsg("No interface for address " + addr.toString());
+		}
+		return routerInterface;
+	}
+	
 	
 	public void printRouterTable(String msg) {
 		System.out.println(msg);
-		for(int i = 0; i<_routingTable.length; i++) {
-			if (_routingTable[i] != null) {
-				System.out.println("Entry " + i + ": " + ((Node)_routingTable[i].node()).identifierString());
-			} else {
-				System.out.println("Entry " + i + ": --");
-			}
+		int i = 0;
+		
+		for (Map.Entry<NetworkAddr, Integer> entry : routingTable.entrySet()) {
+			System.out.println("Entry " + i++ + ": " + entry.getKey().toString());
 		}
 	}
 	
@@ -101,8 +147,8 @@ public class AgentRouter extends MovableRouter {
 	}
 	
 	public int getAvailableInterface(){
-		for (int i = 0; i < _interfaces; i++) {
-			if (_routingTable[i] == null) {
+		for (int i = 0; i < interfaces.length; i++) {
+			if (interfaces[i] == null) {
 				return i;
 			}
 		}
@@ -110,17 +156,18 @@ public class AgentRouter extends MovableRouter {
 	}
 	
 	public int getAvailableAddr(){
-		int[] takenAddrs = new int[_interfaces];
+		int[] takenAddrs = new int[routingTable.size()];
 		int j = 0;
-		for (int i = 0; i < _interfaces; i++) {
-			if (_routingTable[i] != null) {
-				takenAddrs[j] = ((MIPNode) _routingTable[i].node()).getAddr().nodeId();
-				j++;
-			}
+		for (Map.Entry<NetworkAddr, Integer> entry : routingTable.entrySet()) {
+			takenAddrs[j] = entry.getKey().nodeId();
+			j++;
 		}
 		Arrays.sort(takenAddrs);
 		return takenAddrs[takenAddrs.length-1]+1;
 	}
 	
+	public NetworkAddr getAddr() {
+		return _id;
+	}
 	
 }

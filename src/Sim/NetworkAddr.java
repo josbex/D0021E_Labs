@@ -35,5 +35,9 @@ public class NetworkAddr {
 		hashcode = (hashcode * 37) + _nodeId;
 		return hashcode;
 	}
+	
+	public String toString() {
+		return _networkId + "." + _nodeId;
+	}
 
 }

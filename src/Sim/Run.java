@@ -17,6 +17,7 @@ public class Run {
 		//Creates two links
 		Link link1 = new IdealLink();
 		Link link2 = new IdealLink();
+		Link link3 = new IdealLink();
 		
 		//Link link1 = new Link();
 		//Link link2 = new Link();
@@ -64,9 +65,12 @@ public class Run {
 		//MovableRouter routeNode = new MovableRouter(5);
 		//routeNode.connectInterface(0, link1, host1);
 		//routeNode.connectInterface(1, link2, host2);
-		R1.connectInterface(0, link1, host1);
-		R1.connectInterface(1, link2, host2);
-
+		R1.connectInterface(1, link1, host1.getAddr());
+		R1.connectInterface(2, link2, host2.getAddr());
+		
+		R1.connectInterface(0, link3, R2.getAddr());
+		R2.connectInterface(0, link3, R1.getAddr());
+		
 		// Generate some traffic
 		// host1 will send 10 messages with time interval 5 to network 2, node 1. Sequence starts with number 1
 		//routeNode.printRouterTable("Intial routing table");
