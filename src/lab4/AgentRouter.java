@@ -10,8 +10,6 @@ import Sim.Event;
 import Sim.Link;
 import Sim.Message;
 import Sim.NetworkAddr;
-
-
 import Sim.SimEnt;
 
 
@@ -24,12 +22,10 @@ public class AgentRouter extends SimEnt {
 	private HashMap<NetworkAddr, NetworkAddr> reroutes;
 	private HashMap<NetworkAddr, Integer> routingTable;
 	private Link[] interfaces;
-	//protected Lab4RouteTableEntry[] _routingTable;
 	
 	public AgentRouter(int interfaceNumber, int network, int address) {
 		//super(interfaces);
 		this._id = new NetworkAddr(network, address);
-		//this._id = new NetworkAddr(Router.counter, 0);
 		reroutes = new HashMap<NetworkAddr, NetworkAddr>();
 		interfaces = new Link[interfaceNumber];
 		routingTable = new HashMap<NetworkAddr, Integer>();
@@ -49,11 +45,9 @@ public class AgentRouter extends SimEnt {
 	
 	public void setReroute(NetworkAddr hoa, NetworkAddr coa){
 		reroutes.put(hoa, coa);
-		//routingTable.put(coa, routingTable.get(new NetworkAddr(coa.networkId(), 0)));
 	}
 
 	public void recv(SimEnt source, Event event) {
-		//this.printMsg("Source: " + source.identifierString());
 		//printRouterTable("RoutingTable for router: " + this.identifierString());
 		if (event instanceof BindingUpdate) {
 			NetworkAddr hoa = ((BindingUpdate) event).getHoA();
@@ -64,30 +58,9 @@ public class AgentRouter extends SimEnt {
 				this.printMsg("BINDING Message: Node " + hoa.toString() + " to " + coa.toString());
 			} else {
 				send(interfaces[routingTable.get(new NetworkAddr(hoa.networkId(), 0))], event, 0);
-			}
-			//printRouterTable("RoutingTable for router: " + this.identifierString());
-	
-			//New router hands host a new network address, a care of address.
-			// TODO Set node id with message
-			//((MIPNode) source).setNodeID(new NetworkAddr(_id.networkId(), getAvailableAddr()));
-			//NetworkAddr coa = ((BindingUpdate) event).getCoA();
-			//this.printMsg("NODE (" + hoa.networkId() + "." + hoa.nodeId() + ") is now NODE (" + coa.networkId() + "." + coa.nodeId() + ")");
-			//Connect the host to a interface of the new router.
-			//IdealLink newLink = new IdealLink();
-			//((MIPNode) source).setPeer(newLink);
-			//int slot = getAvailableInterface();
-			//if(slot != -1){
-			//	connectInterface(slot, newLink, hoa);
-				//Update the rerouting table of the Home agent.
-				//AgentRouter HA = ((BindingUpdate) event).getHA();
-				//HA.setReroute(hoa,coa);
-			//}
-			//else{
-			//	this.printMsg("No available interfaces!");
-			//}	
+			}	
 		}
 		if (event instanceof WrappedMessage) {
-			System.out.println("Reciveved wrapped message!!!!!!!!!!!!!!!!!!!!!!");
 			if (((WrappedMessage) event).getDestination() == _id) {
 				NetworkAddr wrappedDest = ((WrappedMessage) event).getWrapped().destination();
 				send(
@@ -113,7 +86,7 @@ public class AgentRouter extends SimEnt {
 			NetworkAddr coa = reroutes.get(dest);
 			this.printMsg("Handles packet with seq: " + ((Message) event).seq() + " from node: " + ((Message) event).source().networkId() + "." + ((Message) event).source().nodeId());
 			if(coa != null){
-				this.printMsg("Forwarding message to foreign host (" + coa.networkId() +"." +coa.nodeId() + ")");
+				this.printMsg("Forwarding message meant for (" + dest.networkId() +"." +dest.nodeId() + ") to foreign host (" + coa.networkId() +"." +coa.nodeId() + ")");
 				dest = coa;
 				sendEvent = new WrappedMessage(this._id, dest, msg);
 				sendNext = getInterface(new NetworkAddr(dest.networkId(), 0));
@@ -123,31 +96,9 @@ public class AgentRouter extends SimEnt {
 			}
 			this.printMsg("Sends to node: " + dest.toString());
 			send(sendNext, sendEvent, _now);
-			//printRouterTable("RoutingTable for router: " + this.identifierString());
 		}
 	}
 	
-	/*
-	public void updateRoutingTable(int interfaceNumber, SimEnt link, MIPNode node) {
-		if (interfaceNumber < _interfaces) {
-			_routingTable[interfaceNumber] = new RouteTableEntry(link, node);
-		} else
-			this.printMsg("Trying to connect to port not in router");
-
-		((Link) link).setConnector(this);
-	}
-	
-	protected MIPNode getNode(NetworkAddr addr){
-		MIPNode routerInterface = null;
-		for (int i = 0; i < _interfaces; i++)
-			if (_routingTable[i] != null) {
-				if (((MIPNode) _routingTable[i].node()).getAddr().networkId() == addr.networkId() && ((MIPNode) _routingTable[i].node()).getAddr().nodeId() == addr.nodeId()) {
-					routerInterface = (MIPNode)_routingTable[i].node();
-				}
-			}
-		return routerInterface;
-	}	
-	*/
 	protected SimEnt getInterface(NetworkAddr addr) {
 		SimEnt routerInterface = null;
 		NetworkAddr coa = reroutes.get(addr);
