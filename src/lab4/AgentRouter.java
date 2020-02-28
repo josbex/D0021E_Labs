@@ -7,18 +7,13 @@ import java.util.Map;
 
 import ANSIColors.Color;
 import Sim.Event;
-import Sim.IdealLink;
 import Sim.Link;
 import Sim.Message;
 import Sim.NetworkAddr;
-import Sim.Node;
-import Sim.RouteTableEntry;
-//import Sim.RouteTableEntry;
-import Sim.Router;
+
+
 import Sim.SimEnt;
-import lab3.MobileNode;
-import lab3.MovableRouter;
-import lab3.SwitchRouterEvent;
+
 
 public class AgentRouter extends SimEnt {
 
@@ -38,7 +33,8 @@ public class AgentRouter extends SimEnt {
 		reroutes = new HashMap<NetworkAddr, NetworkAddr>();
 		interfaces = new Link[interfaceNumber];
 		routingTable = new HashMap<NetworkAddr, Integer>();
-		this._identifierString = "AGENTROUTER " + AgentRouter.counter++;
+		AgentRouter.counter++;
+		this._identifierString = "AGENTROUTER " + AgentRouter.counter;
 	}
 	
 	public void connectInterface(int interfaceNumber, Link link, NetworkAddr route) {
@@ -53,11 +49,12 @@ public class AgentRouter extends SimEnt {
 	
 	public void setReroute(NetworkAddr hoa, NetworkAddr coa){
 		reroutes.put(hoa, coa);
-		routingTable.put(coa, routingTable.get(new NetworkAddr(coa.networkId(), 0)));
+		//routingTable.put(coa, routingTable.get(new NetworkAddr(coa.networkId(), 0)));
 	}
 
 	public void recv(SimEnt source, Event event) {
 		//this.printMsg("Source: " + source.identifierString());
+		//printRouterTable("RoutingTable for router: " + this.identifierString());
 		if (event instanceof BindingUpdate) {
 			NetworkAddr hoa = ((BindingUpdate) event).getHoA();
 			NetworkAddr coa = ((BindingUpdate) event).getCoA();
@@ -68,7 +65,7 @@ public class AgentRouter extends SimEnt {
 			} else {
 				send(interfaces[routingTable.get(new NetworkAddr(hoa.networkId(), 0))], event, 0);
 			}
-			printRouterTable("RoutingTable for router: " + this.identifierString());
+			//printRouterTable("RoutingTable for router: " + this.identifierString());
 	
 			//New router hands host a new network address, a care of address.
 			// TODO Set node id with message
@@ -90,6 +87,7 @@ public class AgentRouter extends SimEnt {
 			//}	
 		}
 		if (event instanceof WrappedMessage) {
+			System.out.println("Reciveved wrapped message!!!!!!!!!!!!!!!!!!!!!!");
 			if (((WrappedMessage) event).getDestination() == _id) {
 				NetworkAddr wrappedDest = ((WrappedMessage) event).getWrapped().destination();
 				send(
@@ -108,20 +106,24 @@ public class AgentRouter extends SimEnt {
 		if (event instanceof Message) {
 			Message  msg = (Message) event;
 			Event sendEvent = event;
+			SimEnt sendNext;
 			//Get the intended destination of the message, check if that host has moved, 
 			//in that case forward msg to the care of address of the host.
 			NetworkAddr dest = msg.destination();
 			NetworkAddr coa = reroutes.get(dest);
+			this.printMsg("Handles packet with seq: " + ((Message) event).seq() + " from node: " + ((Message) event).source().networkId() + "." + ((Message) event).source().nodeId());
 			if(coa != null){
 				this.printMsg("Forwarding message to foreign host (" + coa.networkId() +"." +coa.nodeId() + ")");
 				dest = coa;
 				sendEvent = new WrappedMessage(this._id, dest, msg);
+				sendNext = getInterface(new NetworkAddr(dest.networkId(), 0));
 			}
-			this.printMsg("Handles packet with seq: " + ((Message) event).seq() + " from node: " + ((Message) event).source().networkId() + "." + ((Message) event).source().nodeId());
-			SimEnt sendNext = getInterface(dest);
+			else{
+				sendNext = getInterface(dest);
+			}
 			this.printMsg("Sends to node: " + dest.toString());
 			send(sendNext, sendEvent, _now);
-			printRouterTable("RoutingTable for router: " + this.identifierString());
+			//printRouterTable("RoutingTable for router: " + this.identifierString());
 		}
 	}
 	
@@ -166,10 +168,8 @@ public class AgentRouter extends SimEnt {
 	
 	public void printRouterTable(String msg) {
 		System.out.println(msg);
-		int i = 0;
-		
 		for (Map.Entry<NetworkAddr, Integer> entry : routingTable.entrySet()) {
-			System.out.println("Entry " + i++ + ": " + entry.getKey().toString());
+			System.out.println("Entry " + entry.getValue().toString() + ": " + entry.getKey().toString());
 		}
 	}
 	

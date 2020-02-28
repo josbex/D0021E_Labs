@@ -17,10 +17,10 @@ public class WrappedMessage implements Event {
 		this.wrapped = wrapped;
 	}
 	
-	@Override
+	//@Override
 	public void entering(SimEnt locale) {}
 
-	@Override
+	//@Override
 	public String getNameofEvent() {
 		return "WrappedMessage";
 	}

@@ -42,19 +42,20 @@ public class MIPNode extends Node {
 	
 	
 	public void recv(SimEnt src, Event ev) {
-		this.printMsg("Source: " + src.identifierString());
+		//this.printMsg("Source: " + src.identifierString());
 		if (ev instanceof TimerEvent) {
 			if (_stopSendingAfter > _sentmsg) {
 				_sentmsg++;
 				if (HoA == null) {
 					send(_peer, new Message(_id, new NetworkAddr(_toNetwork, _toHost), _seq), 0);
 				} else {
+					System.out.println("Sending wrapped message!!!!!!!!!!!!!!!");
 					send(
 						_peer,
 						new WrappedMessage(
 							_id,
 							HA.getAddr(),
-							new Message(_id, new NetworkAddr(_toNetwork, _toHost), _seq)
+							new Message(this.HoA, new NetworkAddr(_toNetwork, _toHost), _seq)
 						),
 						0
 					);
@@ -72,7 +73,10 @@ public class MIPNode extends Node {
 				}
 			}
 		}
-
+		if (ev instanceof WrappedMessage) {
+			Message msg = ((WrappedMessage) ev).getWrapped();
+			this.printMsg("Receives message with seq: " + (msg.seq() + " at time " + SimEngine.getTime()));
+		}
 		if (ev instanceof Message) {
 			this.printMsg("Receives message with seq: " + ((Message) ev).seq() + " at time " + SimEngine.getTime());
 		}
@@ -87,6 +91,9 @@ public class MIPNode extends Node {
 				link,
 				this._id
 		);
+		newRouter.printRouterTable("RoutingTable for router: " + newRouter.identifierString());
+		System.out.println("Address of home agent " + HA.getAddr().toString());
+		System.out.println("Address of foregin agent " + FA.getAddr().toString());
 	}
 
 }

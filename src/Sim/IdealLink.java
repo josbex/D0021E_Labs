@@ -4,6 +4,7 @@ package Sim;
 
 import lab3.SwitchRouterEvent;
 import lab4.BindingUpdate;
+import lab4.WrappedMessage;
 
 public class IdealLink extends Link {
 	final private int _now = 0;
@@ -15,7 +16,7 @@ public class IdealLink extends Link {
 	// Called when a message enters the link
 
 	public void recv(SimEnt src, Event ev) {
-		if (ev instanceof Message || ev instanceof SwitchRouterEvent || ev instanceof BindingUpdate) {
+		if (ev instanceof Message || ev instanceof SwitchRouterEvent || ev instanceof BindingUpdate || ev instanceof WrappedMessage) {
 			this.printMsg("Link recv msg, passes it through");
 			if (src == _connectorA) {
 				send(_connectorB, ev, _now);
