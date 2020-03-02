@@ -116,6 +116,17 @@ public class AgentRouter extends SimEnt {
 		return routerInterface;
 	}
 	
+	protected void disconnectInterface(NetworkAddr addr){
+		Integer interfaceNumber;
+		interfaceNumber = routingTable.get(addr);
+		if (interfaceNumber != null) {
+			interfaces[interfaceNumber] = null;
+		} else {
+			this.printMsg("No interface for address " + addr.toString());
+		}
+		
+	}
+	
 	
 	public void printRouterTable(String msg) {
 		System.out.println(msg);

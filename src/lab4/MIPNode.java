@@ -46,7 +46,7 @@ public class MIPNode extends Node {
 			if (_stopSendingAfter > _sentmsg) {
 				_sentmsg++;
 				if (HoA == null) {
-					send(_peer, new Message(_id, new NetworkAddr(_toNetwork, _toHost), _seq), 0);
+					send(_peer, new Message(_id, new NetworkAddr(_toNetwork, _toHost), _seq), 3);
 				} else {
 					send(
 						_peer,
@@ -58,16 +58,17 @@ public class MIPNode extends Node {
 						0
 					);
 				}
-				send(this, new TimerEvent(), _timeBetweenSending);
-				this.printMsg("Sent message with seq: " + _seq + " at time " + SimEngine.getTime());
-				_seq++;
 				//Move to the new network after set amount of packets sent.
 				//Message is sent to the new router warning it of the move.
 				if(_sentmsg == moveAfter && moveAfter != 0){
+					HA.disconnectInterface(_id);
 					this.switchRouter(this.FA);
 					send(_peer, new BindingUpdate(HoA, _id), 0);
 					this.printMsg("NODE (" + HoA.toString() + ") moved to network "+ FA.getNetworkAddr() + ". Care of address is " + _id.toString());
 				}
+				send(this, new TimerEvent(), _timeBetweenSending);
+				this.printMsg("Sent message with seq: " + _seq + " at time " + SimEngine.getTime());
+				_seq++;
 			}
 		}
 		if (ev instanceof WrappedMessage) {
