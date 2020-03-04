@@ -46,7 +46,8 @@ public class MIPNode extends Node {
 			if (_stopSendingAfter > _sentmsg) {
 				_sentmsg++;
 				if (HoA == null) {
-					send(_peer, new Message(_id, new NetworkAddr(_toNetwork, _toHost), _seq), 3);
+					send(_peer, new Message(_id, new NetworkAddr(_toNetwork, _toHost), _seq), 0);
+					this.printMsg("Sent message with seq: " + _seq + " at time " + SimEngine.getTime());
 				} else {
 					send(
 						_peer,
@@ -57,19 +58,26 @@ public class MIPNode extends Node {
 						),
 						0
 					);
+					this.printMsg("Sent wrapped message with seq: " + _seq + " at time " + SimEngine.getTime());
 				}
 				//Move to the new network after set amount of packets sent.
 				//Message is sent to the new router warning it of the move.
-				if(_sentmsg == moveAfter && moveAfter != 0){
-					HA.disconnectInterface(_id);
-					this.switchRouter(this.FA);
-					send(_peer, new BindingUpdate(HoA, _id), 0);
-					this.printMsg("NODE (" + HoA.toString() + ") moved to network "+ FA.getNetworkAddr() + ". Care of address is " + _id.toString());
+				if (_sentmsg == moveAfter && moveAfter != 0) {
+					// Delay event in order to ensure it runs between sending packets.
+					this.printMsg(Color.cyan("DEBUG") +  " pending MoveEvent");
+					double delayTime = _timeBetweenSending > 1 ? 1.0 : 0.5;
+					send(this, new MoveEvent(), delayTime);
 				}
 				send(this, new TimerEvent(), _timeBetweenSending);
-				this.printMsg("Sent message with seq: " + _seq + " at time " + SimEngine.getTime());
+				//this.printMsg("Sent message with seq: " + _seq + " at time " + SimEngine.getTime());
 				_seq++;
 			}
+		}
+		if (ev instanceof MoveEvent) {
+			HA.disconnectInterface(_id);
+			this.switchRouter(this.FA);
+			send(_peer, new BindingUpdate(HoA, _id), 0);
+			this.printMsg("NODE (" + HoA.toString() + ") moved to network "+ FA.getNetworkAddr() + ". Care of address is " + _id.toString());
 		}
 		if (ev instanceof WrappedMessage) {
 			Message msg = ((WrappedMessage) ev).getWrapped();
