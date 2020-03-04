@@ -64,7 +64,6 @@ public class MIPNode extends Node {
 				//Message is sent to the new router warning it of the move.
 				if (_sentmsg == moveAfter && moveAfter != 0) {
 					// Delay event in order to ensure it runs between sending packets.
-					this.printMsg(Color.cyan("DEBUG") +  " pending MoveEvent");
 					double delayTime = _timeBetweenSending > 1 ? 1.0 : 0.5;
 					send(this, new MoveEvent(), delayTime);
 				}
