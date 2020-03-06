@@ -48,17 +48,21 @@ public class AgentRouter extends SimEnt {
 	}
 
 	public void recv(SimEnt source, Event event) {
-		//printRouterTable("RoutingTable for router: " + this.identifierString());
 		if (event instanceof BindingUpdate) {
 			NetworkAddr hoa = ((BindingUpdate) event).getHoA();
 			NetworkAddr coa = ((BindingUpdate) event).getCoA();
 			
 			if (hoa.networkId() == this._id.networkId()) {
 				this.setReroute(hoa, coa);
-				this.printMsg("BINDING Message: Node " + hoa.toString() + " to " + coa.toString());
+				this.printMsg("BINDING UPDATE: Node " + hoa.toString() + " to " + coa.toString());
+				send(getInterface(coa), new BindingAck(this._id, coa), 0);
+				this.printMsg("Sends BINDING ACK to Node " + coa.toString());
 			} else {
 				send(interfaces[routingTable.get(new NetworkAddr(hoa.networkId(), 0))], event, 0);
-			}	
+			}
+		}
+		if (event instanceof BindingAck) {
+			send(getInterface(((BindingAck) event).getDestination()), event, 0);
 		}
 		if (event instanceof WrappedMessage) {
 			if (((WrappedMessage) event).getDestination() == _id) {
@@ -68,11 +72,11 @@ public class AgentRouter extends SimEnt {
 						((WrappedMessage) event).getWrapped(),
 						_now
 				);
-				this.printMsg("Unwrapping message to " + wrappedDest.toString());
+				this.printMsg("Unwraps WRAPPED to node: " + wrappedDest.toString());
 			} else {
 				NetworkAddr dest = ((WrappedMessage) event).getDestination();
 				SimEnt sendNext = getInterface(dest);
-				this.printMsg("Sends WRAPPED to node: " + dest.toString());
+				this.printMsg("Sent WRAPPED to node: " + dest.toString());
 				send(sendNext, event, _now);
 			}
 		}
@@ -89,7 +93,7 @@ public class AgentRouter extends SimEnt {
 				this.printMsg("Forwarding message meant for (" + dest.networkId() +"." +dest.nodeId() + ") to foreign host (" + coa.networkId() +"." +coa.nodeId() + ")");
 				dest = coa;
 				sendEvent = new WrappedMessage(this._id, dest, msg);
-				sendNext = getInterface(new NetworkAddr(dest.networkId(), 0));
+				sendNext = getInterface(dest.getNetworkAddr());
 			}
 			else{
 				sendNext = getInterface(dest);
@@ -104,9 +108,12 @@ public class AgentRouter extends SimEnt {
 		NetworkAddr coa = reroutes.get(addr);
 		Integer interfaceNumber;
 		if (coa != null)
-			interfaceNumber = routingTable.get(coa);
-		else
-			interfaceNumber = routingTable.get(addr);
+			addr = coa;
+		
+		interfaceNumber = routingTable.get(addr);
+		
+		if (interfaceNumber == null)
+			interfaceNumber = routingTable.get(addr.getNetworkAddr());
 		
 		if (interfaceNumber != null) {
 			routerInterface = interfaces[interfaceNumber];

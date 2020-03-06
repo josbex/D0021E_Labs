@@ -16,13 +16,11 @@ public class IdealLink extends Link {
 	// Called when a message enters the link
 
 	public void recv(SimEnt src, Event ev) {
-		if (ev instanceof Message || ev instanceof SwitchRouterEvent || ev instanceof BindingUpdate || ev instanceof WrappedMessage) {
-			this.printMsg("Link recv msg, passes it through");
-			if (src == _connectorA) {
-				send(_connectorB, ev, _now);
-			} else {
-				send(_connectorA, ev, _now);
-			}
+		this.printMsg("Link recv msg, passes it through");
+		if (src == _connectorA) {
+			send(_connectorB, ev, _now);
+		} else {
+			send(_connectorA, ev, _now);
 		}
 	}
 
