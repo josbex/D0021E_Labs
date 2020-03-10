@@ -2,6 +2,7 @@ package lab4;
 
 import ANSIColors.Color;
 import Sim.Event;
+import Sim.EventHandle;
 import Sim.IdealLink;
 import Sim.Message;
 import Sim.NetworkAddr;
@@ -20,6 +21,8 @@ public class MIPNode extends Node {
 	private AgentRouter FA;
 	int moveAfter;
 	
+	private EventHandle ackEventHandle;
+	
 
 	public MIPNode(int network, int node, AgentRouter HA, AgentRouter FA, int moveAfter) {
 		super(network, node);
@@ -27,6 +30,7 @@ public class MIPNode extends Node {
 		this.HA = HA;
 		this.FA = FA;
 		this.moveAfter = moveAfter;
+		this.ackEventHandle = null;
 		this._identifierString = "MIPNODE " + _id.networkId() + "." + _id.nodeId();
 	}
 	
@@ -58,7 +62,7 @@ public class MIPNode extends Node {
 						),
 						0
 					);
-					this.printMsg("Sent wrapped message with seq: " + _seq + " at time " + SimEngine.getTime());
+					this.printMsg("Sent WRAPPED with seq: " + _seq + " at time " + SimEngine.getTime());
 				}
 				//Move to the new network after set amount of packets sent.
 				//Message is sent to the new router warning it of the move.
@@ -68,7 +72,6 @@ public class MIPNode extends Node {
 					send(this, new MoveEvent(), delayTime);
 				}
 				send(this, new TimerEvent(), _timeBetweenSending);
-				//this.printMsg("Sent message with seq: " + _seq + " at time " + SimEngine.getTime());
 				_seq++;
 			}
 		}
@@ -76,11 +79,22 @@ public class MIPNode extends Node {
 			HA.disconnectInterface(_id);
 			this.switchRouter(this.FA);
 			send(_peer, new BindingUpdate(HoA, _id), 0);
+			this.ackEventHandle = send(this, new ACKTimeoutEvent(), 6);
 			this.printMsg("NODE (" + HoA.toString() + ") moved to network "+ FA.getNetworkAddr() + ". Care of address is " + _id.toString());
+		}
+		if (ev instanceof BindingAck) {
+			if (this.ackEventHandle != null) {
+				SimEngine.instance().deregister(this.ackEventHandle);
+				this.ackEventHandle = null;
+			}
+			this.printMsg("Recv BINDING ACK from " + ((BindingAck) ev).getSource().toString());
+		}
+		if (ev instanceof ACKTimeoutEvent) {
+			send(_peer, new BindingUpdate(HoA, _id), 0);
 		}
 		if (ev instanceof WrappedMessage) {
 			Message msg = ((WrappedMessage) ev).getWrapped();
-			this.printMsg("Receives message with seq: " + (msg.seq() + " at time " + SimEngine.getTime()));
+			this.printMsg("Receives WRAPPED message with seq: " + (msg.seq() + " at time " + SimEngine.getTime()));
 		}
 		if (ev instanceof Message) {
 			this.printMsg("Receives message with seq: " + ((Message) ev).seq() + " at time " + SimEngine.getTime());

@@ -39,5 +39,9 @@ public class NetworkAddr {
 	public String toString() {
 		return _networkId + "." + _nodeId;
 	}
+	
+	public NetworkAddr getNetworkAddr() {
+		return new NetworkAddr(this._networkId, 0);
+	}
 
 }
