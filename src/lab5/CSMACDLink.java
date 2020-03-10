@@ -71,6 +71,8 @@ public class CSMACDLink extends IdealLink {
 		//Needs to send a frame delivered if the message was sent without collisions.
 		else if(ev instanceof FrameDelivered){
 			//send frame delivered to the node that managed to send its frame.
+			transmittingNodes.clear();
+			isIdle = true;
 		}
 	}
 	
