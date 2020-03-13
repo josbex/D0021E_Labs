@@ -22,7 +22,7 @@ public class BroadcastRouter extends Router {
 		}
 		else if(event instanceof CheckLinkStatus){
 			this.printMsg("Checking the link");
-			SimEnt sendNext = getInterface(((CheckLinkStatus) event).getDest().networkId());
+			SimEnt sendNext = getBroadcastInterface(((CheckLinkStatus) event).getDest());
 			send(sendNext, event, _now);
 		}
 		else if(event instanceof LinkStatus){
@@ -42,7 +42,7 @@ public class BroadcastRouter extends Router {
 		SimEnt routerInterface = null;
 		for (int i = 0; i < _interfaces; i++)
 			if (_routingTable[i] != null) {
-				if (((Node) _routingTable[i].node()).getAddr() == networkAddress) {
+				if (((Node) _routingTable[i].node()).getAddr().equals(networkAddress)) {
 					routerInterface = _routingTable[i].link();
 				}
 			}
