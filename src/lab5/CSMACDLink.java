@@ -23,7 +23,7 @@ public class CSMACDLink extends IdealLink {
 	ArrayList<EventHandle> framesInLink;
 	//The time a frame is in the link
 	int delay;
-	EventHandle state;
+	EventHandle state, switchState;
 	
 	final private int _now = 0;
 
@@ -51,11 +51,11 @@ public class CSMACDLink extends IdealLink {
 			Message msg = (Message) ev;
 			transmittingNodes.add(msg);
 			if(transmittingNodes.size() == 1){
+				state = send(this, new FrameDelivered(msg.source()), delay);
 				//Calculate propagation delay of link signal
 				//Set isIdle to false after this delay
-				send(this, new TimerEvent(), propagationDelay(delay));
 				//FrameDelivered messages represent ACK messages that a frame has been delivered
-				state = send(this, new FrameDelivered(msg.source()), delay);
+				switchState = send(this, new TimerEvent(), propagationDelay(delay));
 			}
 			this.printMsg("Link recv msg, passes it through");
 			if (src == _connectorA) {
@@ -99,6 +99,7 @@ public class CSMACDLink extends IdealLink {
 	
 	private void clearState(){
 		SimEngine.instance().deregister(state);
+		SimEngine.instance().deregister(switchState);
 		clearFramesInLink(framesInLink);
 		transmittingNodes.clear();
 		framesInLink.clear();

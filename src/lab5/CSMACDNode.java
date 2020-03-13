@@ -1,7 +1,6 @@
 package lab5;
 
 import java.util.Random;
-import java.util.concurrent.TimeUnit;
 
 import Sim.Event;
 import Sim.Message;
@@ -46,13 +45,6 @@ public class CSMACDNode extends Node {
 			send(_peer, new CheckLinkStatus(_id,new NetworkAddr(_toNetwork, _toHost)), 0);
 			this.printMsg("Checking status of link");
 		}
-		/*
-		else if (ev instanceof CheckForCollision){
-			//During the transmission, keep checking the no collisions occur
-			send(_peer, new CheckForCollision(_id), timeBetweenChecking);
-			this.printMsg("Checking for collisions!!!!!!!");
-		}
-		*/
 		else if (ev instanceof LinkStatus){
 			LinkStatus state = (LinkStatus) ev;
 			allowedToSend = state.isIdle();
