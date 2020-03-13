@@ -16,7 +16,6 @@ public class CSMACDLink extends IdealLink {
 	
 	//The switching of isIdle needs to happen at some time when a frame is being sent, i.e. the range 0 to delay.
 	boolean isIdle;
-	boolean collisionDetected;
 	//This list also needs to be reset after a collision or a frame is delivered.
 	ArrayList<Message> transmittingNodes;
 	//Needed to keep track of what frames to cancel in case of collision
@@ -33,7 +32,6 @@ public class CSMACDLink extends IdealLink {
 		framesInLink = new ArrayList<EventHandle>();
 		this.delay = delay;
 		this.isIdle = true;
-		this.collisionDetected = false;
 	}
 
 	// Called when a message enters the link
@@ -51,10 +49,10 @@ public class CSMACDLink extends IdealLink {
 			Message msg = (Message) ev;
 			transmittingNodes.add(msg);
 			if(transmittingNodes.size() == 1){
+				//FrameDelivered messages represent ACK messages that a frame has been delivered
 				state = send(this, new FrameDelivered(msg.source()), delay);
 				//Calculate propagation delay of link signal
 				//Set isIdle to false after this delay
-				//FrameDelivered messages represent ACK messages that a frame has been delivered
 				switchState = send(this, new TimerEvent(), propagationDelay(delay));
 			}
 			this.printMsg("Link recv msg, passes it through");
@@ -111,25 +109,7 @@ public class CSMACDLink extends IdealLink {
 			SimEngine.instance().deregister(f);
 		}
 	}
-	
-	private int RemoveCurrentMsg(NetworkAddr source){
-		for(int i = 0; i < transmittingNodes.size(); i++){
-			if(source.equals(transmittingNodes.get(i).source())){
-				transmittingNodes.remove(i);
-				return i;
-			}
-		}
-		return -1;
-	}
-	
-	private void removeFrameFromLink(int index){
-		SimEngine.instance().deregister(framesInLink.get(index));
-		SimEngine.instance().deregister(framesInLink.get(index+1));
-		framesInLink.remove(index+1);
-		framesInLink.remove(index);
-	}
-
-	
+		
 	private double propagationDelay(int range){
 		return Math.random() * range;
 	}

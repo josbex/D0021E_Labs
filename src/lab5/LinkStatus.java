@@ -6,7 +6,7 @@ import Sim.SimEnt;
 
 /**
  * 
- * @author josef
+ * @author 
  * This class is just a message sending out the current status of the link, idle or occupied. 
  */
 public class LinkStatus implements Event{

@@ -23,7 +23,6 @@ public class Run {
 		//Link link3 = new IdealLink();
 		
 		Link collisionLink = new CSMACDLink(3);
-		//Link destinationLink = new CSMACDLink(1);
 		Link Link1 = new IdealLink();
 		Link Link2 = new IdealLink();
 		Link Link3 = new IdealLink();
@@ -98,7 +97,7 @@ public class Run {
 		// host2 will send 8 messages with time interval 10 to network 1, node 1. Sequence starts with number 10
 		host2.StartSending(1, 4, 8, 4, 10); 
 	
-		host3.StartSending(1, 4, 3, 7, 20);
+		host3.StartSending(1, 4, 3, 3, 20);
 		
 
 		//CBRGenerator sends 10 packets with a timeinterval of 5 seconds

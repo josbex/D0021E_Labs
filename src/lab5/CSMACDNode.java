@@ -16,7 +16,7 @@ public class CSMACDNode extends Node {
 	private Message CurrentMsg;
 	private int collisionCounter;
 	private boolean allowedToSend;
-	Random r;
+	private Random r;
 	
 	public CSMACDNode(int network, int node) {
 		super(network, node);
