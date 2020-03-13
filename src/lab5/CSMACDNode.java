@@ -49,6 +49,7 @@ public class CSMACDNode extends Node {
 		}
 		*/
 		else if (ev instanceof LinkStatus){
+			this.printMsg("Rececieved state");
 			LinkStatus state = (LinkStatus) ev;
 			allowedToSend = state.isIdle();
 			if(allowedToSend){
@@ -86,6 +87,7 @@ public class CSMACDNode extends Node {
 			this.printMsg("Frame was succesfully transmitted from " + _id.toString() + " to " + CurrentMsg.destination().toString());
 			//Reset collision counter for next frame
 			collisionCounter = 0;
+			send(this, new TimerEvent(), timeBetweenChecking);
 		}
 		else if (ev instanceof Message) {
 			this.printMsg("Receives message with seq: " + ((Message) ev).seq() + " at time " + SimEngine.getTime() + " from source: " + ((Message) ev).source().toString());

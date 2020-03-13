@@ -96,9 +96,9 @@ public class Run {
 		host1.StartSending(1, 4, 10, 1, 1); 
 		
 		// host2 will send 8 messages with time interval 10 to network 1, node 1. Sequence starts with number 10
-		host2.StartSending(1, 4, 8, 2, 10); 
+		//host2.StartSending(1, 4, 8, 2, 10); 
 	
-		host3.StartSending(1, 4, 12, 3, 20);
+		//host3.StartSending(1, 4, 12, 3, 20);
 		
 
 		//CBRGenerator sends 10 packets with a timeinterval of 5 seconds
