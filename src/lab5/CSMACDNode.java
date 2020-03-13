@@ -27,7 +27,8 @@ public class CSMACDNode extends Node {
 		_toNetwork = network;
 		_toHost = node;
 		_seq = startSeq;
-		send(this, new TimerEvent(), 0);
+		this.allowedToSend = false;
+		send(this, new TimerEvent(), timeBetweenChecking);
 	}
 
 //**********************************************************************************	
@@ -36,7 +37,14 @@ public class CSMACDNode extends Node {
 
 	public void recv(SimEnt src, Event ev) {
 		if (ev instanceof TimerEvent) {
+			//Keep checking if link is idle when wanting to a transmission or retransmission in case of a collision
 			send(_peer, new CheckLinkStatus(), 0);
+			this.printMsg("Checking status of link!!!!!!!!!");
+		}
+		else if (ev instanceof CheckForCollision){
+			//During the transmission, keep checking the no collisions occur
+			send(_peer, new CheckForCollision(_id), timeBetweenChecking);
+			this.printMsg("Checking for collisions!!!!!!!");
 		}
 		else if (ev instanceof LinkStatus){
 			LinkStatus state = (LinkStatus) ev;
@@ -45,9 +53,10 @@ public class CSMACDNode extends Node {
 				if(_stopSendingAfter > _sentmsg){
 					CurrentMsg = new Message(_id, new NetworkAddr(_toNetwork, _toHost), _seq);
 					send(_peer, CurrentMsg, 0);
-					this.printMsg("Sent message with seq: " + _seq + " at time " + SimEngine.getTime());
+					this.printMsg("Sent message with seq: " + _seq + " at time " + SimEngine.getTime() + " to node: " + CurrentMsg.destination().toString());
 					_sentmsg++;
 					_seq++;
+					send(this, new CheckForCollision(_id), timeBetweenChecking);
 				}
 			}
 			else{
@@ -65,12 +74,15 @@ public class CSMACDNode extends Node {
 			//start checking if idle (i.e. timerevent) after the exponential back off period.
 			send(this, new TimerEvent(), exponentialBackOff(collisionCounter));
 		}
+		else if(ev instanceof NoCollisionDetected){
+			send(this, new CheckForCollision(_id), timeBetweenChecking);
+		}
 		else if(ev instanceof FrameDelivered){
 			//Reset collision counter for next frame
 			collisionCounter = 0;
 		}
 		else if (ev instanceof Message) {
-			this.printMsg("Receives message with seq: " + ((Message) ev).seq() + " at time " + SimEngine.getTime());
+			this.printMsg("Receives message with seq: " + ((Message) ev).seq() + " at time " + SimEngine.getTime() + " from source: " + ((Message) ev).source().toString());
 		}
 	}
 	

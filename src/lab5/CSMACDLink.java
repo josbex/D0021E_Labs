@@ -6,6 +6,7 @@ import Sim.Event;
 import Sim.EventHandle;
 import Sim.IdealLink;
 import Sim.Message;
+import Sim.NetworkAddr;
 import Sim.SimEngine;
 import Sim.SimEnt;
 import Sim.TimerEvent;
@@ -15,12 +16,14 @@ public class CSMACDLink extends IdealLink {
 	
 	//The switching of isIdle needs to happen at some time when a frame is being sent, i.e. the range 0 to delay.
 	boolean isIdle;
+	boolean collisionDetected;
 	//This list also needs to be reset after a collision or a frame is delivered.
 	ArrayList<Message> transmittingNodes;
 	//Needed to keep track of what frames to cancel in case of collision
 	ArrayList<EventHandle> framesInLink;
 	//The time a frame is in the link
 	int delay;
+	EventHandle state;
 	
 	final private int _now = 0;
 
@@ -29,6 +32,8 @@ public class CSMACDLink extends IdealLink {
 		transmittingNodes = new ArrayList<Message>();
 		framesInLink = new ArrayList<EventHandle>();
 		this.delay = delay;
+		this.isIdle = true;
+		this.collisionDetected = false;
 	}
 
 	// Called when a message enters the link
@@ -48,46 +53,77 @@ public class CSMACDLink extends IdealLink {
 			this.printMsg("Link recv msg, passes it through");
 			if (src == _connectorA) {
 				framesInLink.add(send(_connectorB, ev, delay));
-				framesInLink.add(send(this, new FrameDelivered(), delay));
+				framesInLink.add(send(_connectorA, new FrameDelivered(), delay));
 			} else {
 				framesInLink.add(send(_connectorA, ev, delay));
-				framesInLink.add(send(this, new FrameDelivered(), delay));
+				framesInLink.add(send(_connectorB, new FrameDelivered(), delay));
 			}
-			if(transmittingNodes.size()>1){
+			//FrameDelivered messages represent ACK messages that a frame has been delivered
+			state = send(this, new FrameDelivered(), delay);
+		}
+		else if( ev instanceof CheckForCollision){
+			if(transmittingNodes.size()>1 || collisionDetected){
 				this.printMsg("Collision detected on the link");
-				//collision occurred
-				//Cancel all frames in link and send collision detected message to all nodes
-				cancelCurrentFrames(framesInLink);
-				sendCollisionMsg(transmittingNodes);
-				//Empty the transmittingNodes list and set isIdle to true
-				transmittingNodes.clear();
-				framesInLink.clear();
-				isIdle = true;
+				this.collisionDetected = true;
+				if (src == _connectorA) {
+					//Sending the response back to the source
+					send(_connectorA, new CollisionDetected(), _now);
+				} else {
+					send(_connectorB, new CollisionDetected(), _now);
+				}
+				//Search for message with matching id as Check message, delete that from transmitting no and cancel the frame of that index in framesInLink.
+				removeFrameFromLink(RemoveCurrentMsg(((CheckForCollision) ev).getSource()));
+				//Return the link to its idle state ones all collided frames have stopped transmitting
+				if(transmittingNodes.size() == 0){
+					this.collisionDetected = false;
+					this.isIdle = true;
+				}
+			}
+			else{
+				this.printMsg("No collision detected on the link");
+				if (src == _connectorA) {
+					send(_connectorA, new NoCollisionDetected(), _now);
+				} else {
+					send(_connectorB, new NoCollisionDetected(), _now);
+				}
+			}
+		}
+		//Packet was delivered without collisions
+		else if(ev instanceof FrameDelivered){
+			if(!collisionDetected){
+				this.printMsg("Frame was delivered");
+				clearState();
 			}
 		}
 		else if(ev instanceof TimerEvent){
 			this.isIdle = false;
 		}
-		//Needs to send a frame delivered if the message was sent without collisions.
-		else if(ev instanceof FrameDelivered){
-			//send frame delivered to the node that managed to send its frame.
-			transmittingNodes.clear();
-			isIdle = true;
-		}
 	}
 	
-	private void sendCollisionMsg(ArrayList<Message> messages){
-		for(Message msg: messages){
-			//Send collision detected to all nodes in the transmitting nodes list
-			//send(this, new CollisionDetected(), 0);
-		}
+	private void clearState(){
+		transmittingNodes.clear();
+		framesInLink.clear();
+		this.collisionDetected = false;
+		this.isIdle = true;
 	}
 	
-	private void cancelCurrentFrames(ArrayList<EventHandle> currentFrames){
-		for(EventHandle f: currentFrames){
-			SimEngine.instance().deregister(f);
+	private int RemoveCurrentMsg(NetworkAddr source){
+		for(int i = 0; i < transmittingNodes.size(); i++){
+			if(source.equals(transmittingNodes.get(i).source())){
+				transmittingNodes.remove(i);
+				return i;
+			}
 		}
+		return -1;
 	}
+	
+	private void removeFrameFromLink(int index){
+		SimEngine.instance().deregister(framesInLink.get(index));
+		SimEngine.instance().deregister(framesInLink.get(index+1));
+		framesInLink.remove(index+1);
+		framesInLink.remove(index);
+	}
+
 	
 	private double propagationDelay(int range){
 		return Math.random() * range;

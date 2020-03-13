@@ -8,6 +8,8 @@ import lab3.MobileNode;
 import lab3.MovableRouter;
 import lab4.AgentRouter;
 import lab4.MIPNode;
+import lab5.CSMACDLink;
+import lab5.CSMACDNode;
 
 // An example of how to build a topology and starting the simulation engine
 
@@ -15,9 +17,19 @@ public class Run {
 
 	public static void main(String[] args) {
 		//Creates two links
-		Link link1 = new IdealLink();
-		Link link2 = new IdealLink();
-		Link link3 = new IdealLink();
+		//Link link1 = new IdealLink();
+		//Link link2 = new IdealLink();
+		//Link link3 = new IdealLink();
+		
+		Link collisionLink = new CSMACDLink(3);
+		//Link destinationLink = new CSMACDLink(1);
+		Link destinationLink = new IdealLink();
+		
+		CSMACDNode host1 = new CSMACDNode(1,1);
+		CSMACDNode host2 = new CSMACDNode(1,2);
+		CSMACDNode host3 = new CSMACDNode(1,3);
+		CSMACDNode host4 = new CSMACDNode(1,4);
+		
 		
 		//Link link1 = new Link();
 		//Link link2 = new Link();
@@ -38,20 +50,22 @@ public class Run {
 		//MobileNode host1 = new MobileNode(1, 1, 2, 4);
 		//MobileNode host2 = new MobileNode(2, 1, 3, 2);
 		
-		AgentRouter R1 = new AgentRouter(5,1,0);
-		AgentRouter R2 = new AgentRouter(6,2,0);
+		//AgentRouter R1 = new AgentRouter(5,1,0);
+		//AgentRouter R2 = new AgentRouter(6,2,0);
 		
 		//Host (1.1)'s HA is set to R1 and moves to R2 after sending 3 packets. Set packet number to 0 to not move.
-		MIPNode host1 = new MIPNode(1,1,R1, R2, 3);
-		MIPNode host2 = new MIPNode(1,2,R1, R2, 0);
+		//MIPNode host1 = new MIPNode(1,1,R1, R2, 3);
+		//MIPNode host2 = new MIPNode(1,2,R1, R2, 0);
 		
 
 		//CBRGenrator host1 = new CBRGenrator(1, 1);
 		//Sink host2 = new Sink(2, 1);
 
 		//Connect links to hosts
-		host1.setPeer(link1);
-		host2.setPeer(link2);
+		host1.setPeer(collisionLink);
+		host2.setPeer(collisionLink);
+		host3.setPeer(collisionLink);
+		host4.setPeer(destinationLink);
 
 		// Creates as router and connect
 		// links to it. Information about
@@ -59,26 +73,29 @@ public class Run {
 		// side of the link is also provided
 		
 		// Note. A switch is created in same way using the Switch class
-		//Router routeNode = new Router(2);
+		Router routeNode = new Router(4);
 		
 		//Sets to 5 available interfaces in the router
 		//MovableRouter routeNode = new MovableRouter(5);
-		//routeNode.connectInterface(0, link1, host1);
+		routeNode.connectInterface(0, collisionLink, host1);
+		routeNode.connectInterface(1, collisionLink, host2);
+		routeNode.connectInterface(2, collisionLink, host3);
+		routeNode.connectInterface(3, destinationLink, host4);
 		//routeNode.connectInterface(1, link2, host2);
-		R1.connectInterface(1, link1, host1.getAddr());
-		R1.connectInterface(2, link2, host2.getAddr());
+		//R1.connectInterface(1, link1, host1.getAddr());
+		//R1.connectInterface(2, link2, host2.getAddr());
 		
-		R1.connectInterface(0, link3, R2.getAddr());
-		R2.connectInterface(0, link3, R1.getAddr());
+		//R1.connectInterface(0, link3, R2.getAddr());
+		//R2.connectInterface(0, link3, R1.getAddr());
 		
 		// Generate some traffic
 		// host1 will send 10 messages with time interval 5 to network 2, node 1. Sequence starts with number 1
-		//routeNode.printRouterTable("Intial routing table");
-		host1.StartSending(1, 2, 10, 5, 1); 
+		host1.StartSending(1, 4, 10, 1, 1); 
 		
 		// host2 will send 8 messages with time interval 10 to network 1, node 1. Sequence starts with number 10
-		host2.StartSending(1, 1, 8, 10, 10); 
-		//routeNode.printRouterTable();
+		host2.StartSending(1, 4, 8, 2, 10); 
+	
+		host3.StartSending(1, 4, 12, 3, 20);
 		
 
 		//CBRGenerator sends 10 packets with a timeinterval of 5 seconds
