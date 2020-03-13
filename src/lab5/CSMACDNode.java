@@ -81,14 +81,8 @@ public class CSMACDNode extends Node {
 			_seq--;
 			//start checking if idle (i.e. timerevent) after the exponential back off period.
 			int backoff = exponentialBackOff(collisionCounter);
-			try {
-				TimeUnit.SECONDS.sleep(backoff);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
 			this.printMsg("Backoff value " + backoff);
-			send(this, new TimerEvent(), timeBetweenChecking);
+			send(this, new TimerEvent(), timeBetweenChecking*backoff);
 		}
 		else if(ev instanceof FrameDelivered){
 			this.printMsg("Frame was succesfully transmitted from " + _id.toString() + " to " + CurrentMsg.destination().toString());
