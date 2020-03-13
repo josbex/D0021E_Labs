@@ -1,5 +1,7 @@
 package lab5;
 
+import java.util.ArrayList;
+
 import Sim.Event;
 import Sim.NetworkAddr;
 import Sim.SimEnt;
@@ -7,9 +9,11 @@ import Sim.SimEnt;
 public class BroadcastMessage implements Event {
 	
 	private NetworkAddr dest;
+	private ArrayList<NetworkAddr> collidedNodes;
 	
-	public BroadcastMessage(NetworkAddr dest){
+	public BroadcastMessage(NetworkAddr dest, ArrayList<NetworkAddr> collidedNodes){
 		this.dest = dest;
+		this.collidedNodes = collidedNodes;
 	}
 
 	public void entering(SimEnt locale) {
@@ -24,6 +28,10 @@ public class BroadcastMessage implements Event {
 
 	public NetworkAddr getDest() {
 		return dest;
+	}
+	
+	public ArrayList<NetworkAddr> getCollidedNodes(){
+		return collidedNodes;
 	}
 
 

@@ -21,18 +21,23 @@ public class BroadcastRouter extends Router {
 			send(sendNext, event, _now);
 		}
 		else if(event instanceof CheckLinkStatus){
-			this.printMsg("Checking the link");
+			this.printMsg("Checking the linkstate for Node: " + ((CheckLinkStatus) event).getSource().toString());
 			SimEnt sendNext = getBroadcastInterface(((CheckLinkStatus) event).getDest());
 			send(sendNext, event, _now);
 		}
 		else if(event instanceof LinkStatus){
+			this.printMsg("Recieved link status for Node: " + ((LinkStatus) event).getDest().toString());
 			SimEnt sendNext = getBroadcastInterface(((LinkStatus) event).getDest());
+			if(sendNext == null){
+				this.printMsg("Couldn't find interface for node " + ((LinkStatus) event).getDest().toString());
+			}
 			send(sendNext, event, _now);
 		}
 		else if(event instanceof BroadcastMessage){
 			broadcastMsg(((BroadcastMessage)event).getDest(), (BroadcastMessage)(event));
 		}
 		else if(event instanceof FrameDelivered){
+			this.printMsg("Sending FrameDelivered for Node: " + ((FrameDelivered) event).getSource().toString());
 			SimEnt sendNext = getBroadcastInterface(((FrameDelivered) event).getSource());
 			send(sendNext, event, _now);
 		}
@@ -51,15 +56,17 @@ public class BroadcastRouter extends Router {
 	
 	private void broadcastMsg(NetworkAddr dest, BroadcastMessage event){
 		SimEnt routerInterface = null;
-		for (int i = 0; i < _interfaces; i++)
-			if (_routingTable[i] != null) {
-				if (!(((Node) _routingTable[i].node()).getAddr().equals(dest))) {
+		int j = 0;
+		while(event.getCollidedNodes().size() > j){
+			for (int i = 0; i < _interfaces; i++){
+				if ((((Node) _routingTable[i].node()).getAddr().equals(event.getCollidedNodes().get(j)))) {
 					routerInterface = _routingTable[i].link();
 					this.printMsg("Sends broadcast message to node: " + ((Node) _routingTable[i].node()).getAddr().toString());
 					send(routerInterface, event, _now);
 				}
 			}
+			j++;
+		}
 	}
-	
-
 }
+	

@@ -40,7 +40,7 @@ public class CSMACDLink extends IdealLink {
 	public void recv(SimEnt src, Event ev) {
 		if (ev instanceof CheckLinkStatus){
 			//Respond with a link status message
-			this.printMsg("Sending state of link");
+			this.printMsg("Sending state of link to Node: " + ((CheckLinkStatus) ev).getSource().toString());
 			if (src == _connectorA) {
 				send(_connectorA, new LinkStatus(isIdle, ((CheckLinkStatus) ev).getSource()), _now);
 			} else {
@@ -69,50 +69,19 @@ public class CSMACDLink extends IdealLink {
 			if(transmittingNodes.size()> 1){
 				this.printMsg("Collision detected on the link");
 				if (src == _connectorA) {
-					send(_connectorA, new BroadcastMessage(msg.destination()), _now);
+					send(_connectorA, new BroadcastMessage(msg.destination(), collidedNodes(transmittingNodes)), _now);
 				} else {
-					send(_connectorB, new BroadcastMessage(msg.destination()), _now);
+					send(_connectorB, new BroadcastMessage(msg.destination(), collidedNodes(transmittingNodes)), _now);
 				}
 				clearState();
 			}
 
 		}
-		/*
-		else if( ev instanceof CheckForCollision){
-			if(transmittingNodes.size()>1 || collisionDetected){
-				this.printMsg("Collision detected on the link");
-				this.collisionDetected = true;
-				if (src == _connectorA) {
-					//Sending the response back to the source
-					send(_connectorA, new CollisionDetected(), _now);
-				} else {
-					send(_connectorB, new CollisionDetected(), _now);
-				}
-				//Search for message with matching id as Check message, delete that from transmitting no and cancel the frame of that index in framesInLink.
-				removeFrameFromLink(RemoveCurrentMsg(((CheckForCollision) ev).getSource()));
-				//Return the link to its idle state ones all collided frames have stopped transmitting
-				if(transmittingNodes.size() == 0){
-					this.collisionDetected = false;
-					this.isIdle = true;
-				}
-			}
-			
-			else{
-				this.printMsg("No collision detected on the link");
-				if (src == _connectorA) {
-					send(_connectorA, new NoCollisionDetected(), _now);
-				} else {
-					send(_connectorB, new NoCollisionDetected(), _now);
-				}
-			}
-		}
-		*/
 		//Packet was delivered without collisions
 		else if(ev instanceof FrameDelivered){
-			this.printMsg("Frame was delivered");
+			this.printMsg("Frame was delivered from Node: " + ((FrameDelivered) ev).getSource().toString());
 			transmittingNodes.clear();
 			framesInLink.clear();
-			this.collisionDetected = false;
 			this.isIdle = true;
 		}
 		else if(ev instanceof TimerEvent){
@@ -120,12 +89,19 @@ public class CSMACDLink extends IdealLink {
 		}
 	}
 	
+	private ArrayList<NetworkAddr> collidedNodes(ArrayList<Message> msgs){
+		ArrayList<NetworkAddr> nodes = new ArrayList<NetworkAddr>();
+		for(Message m: msgs){
+			nodes.add(m.source());
+		}
+		return nodes;
+	}
+	
 	private void clearState(){
 		SimEngine.instance().deregister(state);
 		clearFramesInLink(framesInLink);
 		transmittingNodes.clear();
 		framesInLink.clear();
-		this.collisionDetected = false;
 		this.isIdle = true;
 	}
 	

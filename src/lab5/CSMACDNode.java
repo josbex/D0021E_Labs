@@ -1,5 +1,8 @@
 package lab5;
 
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
+
 import Sim.Event;
 import Sim.Message;
 import Sim.NetworkAddr;
@@ -14,10 +17,12 @@ public class CSMACDNode extends Node {
 	private Message CurrentMsg;
 	private int collisionCounter;
 	private boolean allowedToSend;
+	Random r;
 	
 	public CSMACDNode(int network, int node) {
 		super(network, node);
 		this.collisionCounter = 0;
+		r = new Random();
 	}
 	
 	
@@ -39,7 +44,7 @@ public class CSMACDNode extends Node {
 		if (ev instanceof TimerEvent) {
 			//Keep checking if link is idle when wanting to a transmission or retransmission in case of a collision
 			send(_peer, new CheckLinkStatus(_id,new NetworkAddr(_toNetwork, _toHost)), 0);
-			this.printMsg("Checking status of link!!!!!!!!!");
+			this.printMsg("Checking status of link");
 		}
 		/*
 		else if (ev instanceof CheckForCollision){
@@ -49,18 +54,16 @@ public class CSMACDNode extends Node {
 		}
 		*/
 		else if (ev instanceof LinkStatus){
-			this.printMsg("Rececieved state");
 			LinkStatus state = (LinkStatus) ev;
 			allowedToSend = state.isIdle();
+			this.printMsg("Rececieved linkstate: " + allowedToSend);
 			if(allowedToSend){
 				if(_stopSendingAfter > _sentmsg){
 					CurrentMsg = new Message(_id, new NetworkAddr(_toNetwork, _toHost), _seq);
 					send(_peer, CurrentMsg, 0);
-					//send(_peer, new BroadcastMessage(_id), 0);
 					this.printMsg("Sent message with seq: " + _seq + " at time " + SimEngine.getTime() + " to node: " + CurrentMsg.destination().toString());
 					_sentmsg++;
 					_seq++;
-					//send(this, new CheckForCollision(_id), timeBetweenChecking);
 				}
 			}
 			else{
@@ -70,19 +73,23 @@ public class CSMACDNode extends Node {
 			}
 		}
 		else if(ev instanceof BroadcastMessage){
+			this.printMsg("Recieved broadcast message");
 			//increase counter of how many times this packet has collided
 			collisionCounter++;
 			//reset the message to be sent to the collided message, decrease seq and sentmsg by one.
 			_sentmsg--;
 			_seq--;
 			//start checking if idle (i.e. timerevent) after the exponential back off period.
-			send(this, new TimerEvent(), exponentialBackOff(collisionCounter));
+			int backoff = exponentialBackOff(collisionCounter);
+			try {
+				TimeUnit.SECONDS.sleep(backoff);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			this.printMsg("Backoff value " + backoff);
+			send(this, new TimerEvent(), timeBetweenChecking);
 		}
-		/*
-		else if(ev instanceof NoCollisionDetected){
-			send(this, new CheckForCollision(_id), timeBetweenChecking);
-		}
-		*/
 		else if(ev instanceof FrameDelivered){
 			this.printMsg("Frame was succesfully transmitted from " + _id.toString() + " to " + CurrentMsg.destination().toString());
 			//Reset collision counter for next frame
@@ -101,7 +108,7 @@ public class CSMACDNode extends Node {
 	private int exponentialBackOff(int c){
 		int max = (int)(Math.pow(2,c))-1;
 		int range = max + 1;
-		return (int)(Math.random() * range);
+		return (int)(r.nextInt(range));
 	}
 	
 
