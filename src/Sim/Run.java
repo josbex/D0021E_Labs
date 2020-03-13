@@ -8,6 +8,7 @@ import lab3.MobileNode;
 import lab3.MovableRouter;
 import lab4.AgentRouter;
 import lab4.MIPNode;
+import lab5.BroadcastRouter;
 import lab5.CSMACDLink;
 import lab5.CSMACDNode;
 
@@ -23,7 +24,9 @@ public class Run {
 		
 		Link collisionLink = new CSMACDLink(3);
 		//Link destinationLink = new CSMACDLink(1);
-		Link destinationLink = new IdealLink();
+		Link Link1 = new IdealLink();
+		Link Link2 = new IdealLink();
+		Link Link3 = new IdealLink();
 		
 		CSMACDNode host1 = new CSMACDNode(1,1);
 		CSMACDNode host2 = new CSMACDNode(1,2);
@@ -62,10 +65,10 @@ public class Run {
 		//Sink host2 = new Sink(2, 1);
 
 		//Connect links to hosts
-		host1.setPeer(collisionLink);
-		host2.setPeer(collisionLink);
-		host3.setPeer(collisionLink);
-		host4.setPeer(destinationLink);
+		host1.setPeer(Link1);
+		host2.setPeer(Link2);
+		host3.setPeer(Link3);
+		host4.setPeer(collisionLink);
 
 		// Creates as router and connect
 		// links to it. Information about
@@ -73,14 +76,14 @@ public class Run {
 		// side of the link is also provided
 		
 		// Note. A switch is created in same way using the Switch class
-		Router routeNode = new Router(4);
+		BroadcastRouter routeNode = new BroadcastRouter(4);
 		
 		//Sets to 5 available interfaces in the router
 		//MovableRouter routeNode = new MovableRouter(5);
-		routeNode.connectInterface(0, collisionLink, host1);
-		routeNode.connectInterface(1, collisionLink, host2);
-		routeNode.connectInterface(2, collisionLink, host3);
-		routeNode.connectInterface(3, destinationLink, host4);
+		routeNode.connectInterface(0, Link1, host1);
+		routeNode.connectInterface(1, Link2, host2);
+		routeNode.connectInterface(2, Link3, host3);
+		routeNode.connectInterface(3, collisionLink, host4);
 		//routeNode.connectInterface(1, link2, host2);
 		//R1.connectInterface(1, link1, host1.getAddr());
 		//R1.connectInterface(2, link2, host2.getAddr());

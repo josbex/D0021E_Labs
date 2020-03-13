@@ -1,6 +1,7 @@
 package lab5;
 
 import Sim.Event;
+import Sim.NetworkAddr;
 import Sim.SimEnt;
 
 /**
@@ -11,9 +12,15 @@ import Sim.SimEnt;
 public class LinkStatus implements Event{
 	
 	private boolean isIdle;
+	private NetworkAddr from;
 	
-	public LinkStatus(boolean status){
+	public LinkStatus(boolean status, NetworkAddr from){
 		this.isIdle = status;
+		this.from = from;
+	}
+	
+	public NetworkAddr getDest(){
+		return from;
 	}
 	
 	public boolean isIdle(){

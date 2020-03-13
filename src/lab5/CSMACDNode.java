@@ -38,14 +38,16 @@ public class CSMACDNode extends Node {
 	public void recv(SimEnt src, Event ev) {
 		if (ev instanceof TimerEvent) {
 			//Keep checking if link is idle when wanting to a transmission or retransmission in case of a collision
-			send(_peer, new CheckLinkStatus(), 0);
+			send(_peer, new CheckLinkStatus(_id,new NetworkAddr(_toNetwork, _toHost)), 0);
 			this.printMsg("Checking status of link!!!!!!!!!");
 		}
+		/*
 		else if (ev instanceof CheckForCollision){
 			//During the transmission, keep checking the no collisions occur
 			send(_peer, new CheckForCollision(_id), timeBetweenChecking);
 			this.printMsg("Checking for collisions!!!!!!!");
 		}
+		*/
 		else if (ev instanceof LinkStatus){
 			LinkStatus state = (LinkStatus) ev;
 			allowedToSend = state.isIdle();
@@ -53,10 +55,11 @@ public class CSMACDNode extends Node {
 				if(_stopSendingAfter > _sentmsg){
 					CurrentMsg = new Message(_id, new NetworkAddr(_toNetwork, _toHost), _seq);
 					send(_peer, CurrentMsg, 0);
+					//send(_peer, new BroadcastMessage(_id), 0);
 					this.printMsg("Sent message with seq: " + _seq + " at time " + SimEngine.getTime() + " to node: " + CurrentMsg.destination().toString());
 					_sentmsg++;
 					_seq++;
-					send(this, new CheckForCollision(_id), timeBetweenChecking);
+					//send(this, new CheckForCollision(_id), timeBetweenChecking);
 				}
 			}
 			else{
@@ -65,7 +68,7 @@ public class CSMACDNode extends Node {
 				}
 			}
 		}
-		else if(ev instanceof CollisionDetected){
+		else if(ev instanceof BroadcastMessage){
 			//increase counter of how many times this packet has collided
 			collisionCounter++;
 			//reset the message to be sent to the collided message, decrease seq and sentmsg by one.
@@ -74,10 +77,13 @@ public class CSMACDNode extends Node {
 			//start checking if idle (i.e. timerevent) after the exponential back off period.
 			send(this, new TimerEvent(), exponentialBackOff(collisionCounter));
 		}
+		/*
 		else if(ev instanceof NoCollisionDetected){
 			send(this, new CheckForCollision(_id), timeBetweenChecking);
 		}
+		*/
 		else if(ev instanceof FrameDelivered){
+			this.printMsg("Frame was succesfully transmitted from " + _id.toString() + " to " + CurrentMsg.destination().toString());
 			//Reset collision counter for next frame
 			collisionCounter = 0;
 		}
