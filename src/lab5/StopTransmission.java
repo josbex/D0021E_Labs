@@ -3,12 +3,10 @@ package lab5;
 import Sim.Event;
 import Sim.SimEnt;
 
-public class FrameDelivered implements Event {
-
+public class StopTransmission implements Event {
 	public void entering(SimEnt locale) {}
 
 	public String getNameofEvent() {
-		return "FrameDelivered";
+		return "StopTransmission";
 	}
-
 }

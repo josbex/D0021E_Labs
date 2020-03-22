@@ -1,101 +1,130 @@
 package lab5;
 
-import java.util.Random;
+import ANSIColors.Color;
+import Sim.*;
 
-import Sim.Event;
-import Sim.Message;
-import Sim.NetworkAddr;
-import Sim.Node;
-import Sim.SimEngine;
-import Sim.SimEnt;
-import Sim.TimerEvent;
+import java.util.Random;
 
 public class CSMACDNode extends Node {
 
-	private int timeBetweenChecking;
-	private Message CurrentMsg;
-	private int collisionCounter;
-	private boolean allowedToSend;
+	private final int NOW = 0;
+
+	private Frame currentFrame; // Current frame either queued or in transmission
+
+	private LinkStatus linkStatus; // If link is idle or busy
+	private boolean isTransmitting;
+	private boolean backingOff;
+
+	private int collisionCounter; // Times current frame has collided
+	private int maxCollisions;
+
+	private NetworkAddr toNode;
 	private Random r;
-	
+
+
 	public CSMACDNode(int network, int node) {
 		super(network, node);
+		this.linkStatus = LinkStatus.idle;
+		this.isTransmitting = false;
+		this.backingOff = false;
 		this.collisionCounter = 0;
 		r = new Random();
 	}
-	
-	
-	public void StartSending(int network, int node, int number, int timeInterval, int startSeq) {
-		_stopSendingAfter = number;
-		this.timeBetweenChecking = timeInterval;
-		_toNetwork = network;
-		_toHost = node;
-		_seq = startSeq;
-		this.allowedToSend = false;
-		send(this, new TimerEvent(), timeBetweenChecking);
+
+	public void StartSending(NetworkAddr toNode, int number, int timeInterval, int startSeq, int maxCollisions) {
+		this._stopSendingAfter = number;
+		this.toNode = toNode;
+		this._timeBetweenSending = timeInterval;
+		this._seq = startSeq;
+		this.maxCollisions = maxCollisions;
+		send(this, new TimerEvent(), this._timeBetweenSending);
 	}
 
-//**********************************************************************************	
-
-	// This method is called upon that an event destined for this node triggers.
-
+	@Override
 	public void recv(SimEnt src, Event ev) {
 		if (ev instanceof TimerEvent) {
-			//Keep checking if link is idle when wanting to a transmission or retransmission in case of a collision
-			send(_peer, new CheckLinkStatus(_id,new NetworkAddr(_toNetwork, _toHost)), 0);
-			this.printMsg("Checking status of link");
-		}
-		else if (ev instanceof LinkStatus){
-			LinkStatus state = (LinkStatus) ev;
-			allowedToSend = state.isIdle();
-			this.printMsg("Rececieved linkstate: " + allowedToSend);
-			if(allowedToSend){
-				if(_stopSendingAfter > _sentmsg){
-					CurrentMsg = new Message(_id, new NetworkAddr(_toNetwork, _toHost), _seq);
-					send(_peer, CurrentMsg, 0);
-					this.printMsg("Sent message with seq: " + _seq + " at time " + SimEngine.getTime() + " to node: " + CurrentMsg.destination().toString());
-					_sentmsg++;
-					_seq++;
-				}
+
+			// Constructing new frame
+			_sentmsg++;
+			this.currentFrame = new Frame(_id, toNode, _seq++);
+			// If link is idle, send immediately
+			if (this.linkStatus.isIdle())
+				this.startTransmitting();
+
+		} else if (ev instanceof BackoffTimerEvent) {
+
+			this.backingOff = false;
+			// If link is idle, send immediately
+			if (this.linkStatus.isIdle())
+				this.startTransmitting();
+
+		} else if (ev instanceof FrameDelivered) {
+
+			// Frame has now been successfully transmitted
+			this.stopTransmitting();
+			this.collisionCounter = 0;
+			this.currentFrame = null;
+
+			if (this._sentmsg < this._stopSendingAfter)
+				send(this, new TimerEvent(), this._timeBetweenSending);
+			else
+				this.printMsg(Color.blue("Successfully sent all frames"));
+
+		} else if (ev instanceof LinkStatusChanged) {
+
+			this.linkStatus = ((LinkStatusChanged) ev).getLinkStatus();
+
+			if (this.isTransmitting && this.linkStatus.isBusy()) {
+				// Collision detected, stop transmission and start backoff timer
+				this.collisionCounter++;
+
+				int backoff = exponentialBackoff();
+				this.backingOff = true;
+
+				this.stopTransmitting();
+				send(this, new BackoffTimerEvent(), backoff);
+
+				this.printMsg(
+						Color.yellow("COLLISION DETECTED") +
+						" no " + this.collisionCounter +
+						": seq " + this.currentFrame.seq() +
+						", will retry after " + backoff +
+						" (" + (SimEngine.getTime() + backoff) + ")"
+				);
+
+			} else if (this.linkStatus.isIdle() && this.currentFrame != null && !this.backingOff) {
+				// Link now seems idle and we have a frame queued up
+				this.startTransmitting();
 			}
-			else{
-				if(_stopSendingAfter > _sentmsg){
-					send(this, new TimerEvent(), timeBetweenChecking);
-				}
-			}
-		}
-		else if(ev instanceof BroadcastMessage){
-			this.printMsg("Recieved broadcast message");
-			//increase counter of how many times this packet has collided
-			collisionCounter++;
-			//reset the message to be sent to the collided message, decrease seq and sentmsg by one.
-			_sentmsg--;
-			_seq--;
-			//start checking if idle (i.e. timerevent) after the exponential back off period.
-			int backoff = exponentialBackOff(collisionCounter);
-			this.printMsg("Backoff value " + backoff);
-			send(this, new TimerEvent(), timeBetweenChecking*backoff);
-		}
-		else if(ev instanceof FrameDelivered){
-			this.printMsg("Frame was succesfully transmitted from " + _id.toString() + " to " + CurrentMsg.destination().toString());
-			//Reset collision counter for next frame
-			collisionCounter = 0;
-			send(this, new TimerEvent(), timeBetweenChecking);
-		}
-		else if (ev instanceof Message) {
-			this.printMsg("Receives message with seq: " + ((Message) ev).seq() + " at time " + SimEngine.getTime() + " from source: " + ((Message) ev).source().toString());
+
+		} else if (ev instanceof Frame) {
+
+			// A frame has been successfully transmitted from somewhere
+			Frame frame = (Frame) ev;
+			if (frame.destination() == _id)
+				this.printMsg(Color.green("RECV ") + "from " + frame.source().toString() + " seq " + frame.seq());
+
 		}
 	}
-	
-	/**
-	 * @param c: number of collisions current frame has had
-	 * @return random number K, deciding the back off time period
-	 */
-	private int exponentialBackOff(int c){
-		int max = (int)(Math.pow(2,c))-1;
-		int range = max + 1;
-		return (int)(r.nextInt(range));
+
+	private void stopTransmitting() {
+		this.isTransmitting = false;
+		send(_peer, new StopTransmission(), NOW);
 	}
-	
+
+	private void startTransmitting() {
+		if (this.currentFrame == null) {
+			this.printMsg(Color.red("ERROR") + ": Tried to transmit null frame");
+			return;
+		}
+
+		this.isTransmitting = true;
+		send(_peer, new StartTransmission(this.currentFrame), NOW);
+		this.printMsg("Sends frame seq " + this.currentFrame.seq());
+	}
+
+	private int exponentialBackoff() {
+		return r.nextInt( ( (int) Math.pow(2, Math.min(this.collisionCounter, this.maxCollisions)) ) * Frame.transmissionDelay );
+	}
 
 }

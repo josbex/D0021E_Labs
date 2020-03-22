@@ -47,7 +47,8 @@ public abstract class SimEnt {
 	public abstract void recv(SimEnt source, Event event);
 
 	public void printMsg(String msg) {
-		System.out.println("[" + this._identifierString + "]: " + msg);
+		System.out.printf("[%06d][%10s]: %s\n", (int) SimEngine.getTime(), this._identifierString, msg);
+		//System.out.println("[" + this._identifierString + " | " + SimEngine.getTime() + "]: " + msg);
 	}
 
 	public String identifierString() {
