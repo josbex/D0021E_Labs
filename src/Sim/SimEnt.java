@@ -3,9 +3,20 @@ package Sim;
 // All entities like, nodes, switch, router, link etc that handles events
 // need to inherit from this class
 
+import lab5.Logger;
+
 public abstract class SimEnt {
 
 	protected static int counter = 0;
+
+	private static Logger logger = new Logger("sim_output.log");
+	private static int msgCount = 0;
+
+	private static void newMessage(String formattedMsg) {
+		SimEnt.logger.log(formattedMsg);
+		if (++msgCount > 100) // Hardcoded value
+			SimEnt.logger.writeLog();
+	}
 
 	protected String _identifierString;
 
@@ -47,8 +58,9 @@ public abstract class SimEnt {
 	public abstract void recv(SimEnt source, Event event);
 
 	public void printMsg(String msg) {
-		System.out.printf("[%06d][%10s]: %s\n", (int) SimEngine.getTime(), this._identifierString, msg);
-		//System.out.println("[" + this._identifierString + " | " + SimEngine.getTime() + "]: " + msg);
+		String formattedMsg = String.format("[%08d][%10s]: %s", (int) SimEngine.getTime(), this._identifierString, msg);
+		System.out.println(formattedMsg);
+		SimEnt.newMessage(formattedMsg);
 	}
 
 	public String identifierString() {

@@ -1,18 +1,20 @@
 package lab5;
 
-import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import ANSIColors.Color;
 import Sim.*;
 
 
 public class CSMACDLink extends IdealLink {
-	
 
-	private int propagationDelay; // The time for a bit to propagate through the link
-	private int nodesTransmitting; // Amount of nodes currently trying to transmit
+	private static enum ConnectorStatus {
+		idle,
+		transmitting;
+	}
 
-	private class Transmission {
+	private static class Transmission {
 		SimEnt src;
 		Frame frame;
 		EventHandle frameDeliveryHandle;
@@ -26,15 +28,16 @@ public class CSMACDLink extends IdealLink {
 
 	private Transmission transmission;
 
-	ArrayList<SimEnt> connectors;
+	public int propagationDelay; // The time for a bit to propagate through the link
+
+	HashMap<SimEnt, ConnectorStatus> connectors;
 	
 	final private int _now = 0;
 
 	public CSMACDLink(int propagationDelay) {
 		super();
-		connectors = new ArrayList<SimEnt>();
+		connectors = new HashMap<SimEnt, ConnectorStatus>();
 		this.propagationDelay = propagationDelay;
-		this.nodesTransmitting = 0;
 	}
 
 	public void recv(SimEnt src, Event ev) {
@@ -53,15 +56,11 @@ public class CSMACDLink extends IdealLink {
 				this.transmission.frame = null;
 			}
 
-			this.nodesTransmitting++;
-			sendToAll(src, new LinkStatusChanged(LinkStatus.busy), this.propagationDelay);
+			this.setConnectorStatus(src, ConnectorStatus.transmitting);
 
 		} else if (ev instanceof StopTransmission) {
 
-			if ( --(this.nodesTransmitting) == 0 ) {
-				sendToAll(src, new LinkStatusChanged(LinkStatus.idle), this.propagationDelay);
-				this.transmission = null;
-			}
+			this.setConnectorStatus(src, ConnectorStatus.idle);
 
 		} else if (ev instanceof FrameDelivered) {
 
@@ -76,15 +75,44 @@ public class CSMACDLink extends IdealLink {
 	 * Send to all except src
 	 */
 	private void sendToAll(SimEnt src, Event ev, int delayExecution) {
-		for (SimEnt peer : connectors)
+		for (SimEnt peer : connectors.keySet())
 			if (peer != src)
 				send(peer, ev, delayExecution);
 	}
 
+	private void setConnectorStatus(SimEnt peer, ConnectorStatus status) {
+		this.connectors.put(peer, status);
+
+		if (status == ConnectorStatus.transmitting) {
+			// A node started transmitting, send initial signal to other nodes
+			sendToAll(peer, new LinkStatusChanged(LinkStatus.busy), this.propagationDelay);
+		} else {
+			// A node stopped transmitting
+			SimEnt otherTransmittingNode = null;
+			for (Map.Entry<SimEnt, ConnectorStatus> e : this.connectors.entrySet()) {
+				if (e.getValue() == ConnectorStatus.transmitting && otherTransmittingNode == null)
+					// Found a transmitting node
+					otherTransmittingNode = e.getKey();
+				else if (e.getValue() == ConnectorStatus.transmitting)
+					// At least two nodes are still transmitting, no change in link status
+					return;
+			}
+
+			if (otherTransmittingNode != null) {
+				// Only one node is now transmitting, we can tell it that the link is idle.
+				send(otherTransmittingNode, new LinkStatusChanged(LinkStatus.idle), this.propagationDelay);
+			} else {
+				// Last node stopped transmission, tell all other nodes that link is idle.
+				sendToAll(peer, new LinkStatusChanged(LinkStatus.idle), this.propagationDelay);
+				this.transmission = null;
+			}
+		}
+	}
+
 	@Override
 	public void setConnector(SimEnt connectTo) {
-		if (!connectors.contains(connectTo))
-			connectors.add(connectTo);
+		if (!connectors.containsKey(connectTo))
+			connectors.put(connectTo, ConnectorStatus.idle);
 	}
 
 }

@@ -16,10 +16,15 @@ public class CSMACDNode extends Node {
 	private boolean backingOff;
 
 	private int collisionCounter; // Times current frame has collided
-	private int maxCollisions;
+	private int maxBackoffExponent; // Maximum collisions when calculating exponential backoff
+	private int maxCollisions; // Maximum amount of collisions
+	private int droppedFrames; // Amount of dropped frames
 
 	private NetworkAddr toNode;
 	private Random r;
+
+	private Logger arrivalLogger;
+	private Logger collisionLogger;
 
 
 	public CSMACDNode(int network, int node) {
@@ -28,14 +33,19 @@ public class CSMACDNode extends Node {
 		this.isTransmitting = false;
 		this.backingOff = false;
 		this.collisionCounter = 0;
+		this.droppedFrames = 0;
+
+		this.arrivalLogger = new Logger("NODE" + network + "_" + node + ".log");
+		this.collisionLogger = new Logger("NODE" + network + "_" + node + "_Collisions.log");
 		r = new Random();
 	}
 
-	public void StartSending(NetworkAddr toNode, int number, int timeInterval, int startSeq, int maxCollisions) {
+	public void StartSending(NetworkAddr toNode, int number, int timeInterval, int startSeq, int maxBackoffExponent, int maxCollisions) {
 		this._stopSendingAfter = number;
 		this.toNode = toNode;
 		this._timeBetweenSending = timeInterval;
 		this._seq = startSeq;
+		this.maxBackoffExponent = maxBackoffExponent;
 		this.maxCollisions = maxCollisions;
 		send(this, new TimerEvent(), this._timeBetweenSending);
 	}
@@ -61,6 +71,8 @@ public class CSMACDNode extends Node {
 		} else if (ev instanceof FrameDelivered) {
 
 			// Frame has now been successfully transmitted
+			this.arrivalLogger.log("" + (int) SimEngine.getTime() + ", " + this.currentFrame.seq());
+
 			this.stopTransmitting();
 			this.collisionCounter = 0;
 			this.currentFrame = null;
@@ -70,6 +82,7 @@ public class CSMACDNode extends Node {
 			else
 				this.printMsg(Color.blue("Successfully sent all frames"));
 
+
 		} else if (ev instanceof LinkStatusChanged) {
 
 			this.linkStatus = ((LinkStatusChanged) ev).getLinkStatus();
@@ -77,20 +90,31 @@ public class CSMACDNode extends Node {
 			if (this.isTransmitting && this.linkStatus.isBusy()) {
 				// Collision detected, stop transmission and start backoff timer
 				this.collisionCounter++;
-
-				int backoff = exponentialBackoff();
-				this.backingOff = true;
+				this.collisionLogger.log("" + (int) SimEngine.getTime() + ", "  + this.collisionCounter);
 
 				this.stopTransmitting();
-				send(this, new BackoffTimerEvent(), backoff);
 
-				this.printMsg(
-						Color.yellow("COLLISION DETECTED") +
-						" no " + this.collisionCounter +
-						": seq " + this.currentFrame.seq() +
-						", will retry after " + backoff +
-						" (" + (SimEngine.getTime() + backoff) + ")"
-				);
+				if (this.collisionCounter < this.maxCollisions) {
+					int backoff = exponentialBackoff();
+					this.backingOff = true;
+
+					send(this, new BackoffTimerEvent(), backoff);
+
+					this.printMsg(
+							Color.yellow("COLLISION DETECTED") +
+									" no " + this.collisionCounter +
+									": seq " + this.currentFrame.seq() +
+									", will retry after " + backoff +
+									" (" + ((int) SimEngine.getTime() + backoff) + ")"
+					);
+				} else {
+					// Transmission of frame failed
+					this.collisionCounter = 0;
+					this.droppedFrames++;
+					send(this, new TimerEvent(), _timeBetweenSending);
+					this.printMsg(Color.red("DISCARDED ") + "frame " + this.currentFrame.seq());
+					this.currentFrame = null;
+				}
 
 			} else if (this.linkStatus.isIdle() && this.currentFrame != null && !this.backingOff) {
 				// Link now seems idle and we have a frame queued up
@@ -124,7 +148,12 @@ public class CSMACDNode extends Node {
 	}
 
 	private int exponentialBackoff() {
-		return r.nextInt( ( (int) Math.pow(2, Math.min(this.collisionCounter, this.maxCollisions)) ) * Frame.transmissionDelay );
+		//return r.nextInt( (int) Math.pow(2, Math.min(this.collisionCounter, this.backoffMax)) ) * (Frame.transmissionDelay * 2);
+		return r.nextInt( (int) Math.pow(2, Math.min(this.collisionCounter, this.maxBackoffExponent)) ) * (((CSMACDLink) _peer).propagationDelay * 2);
+	}
+
+	public int getDroppedFrames() {
+		return this.droppedFrames;
 	}
 
 }
