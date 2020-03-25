@@ -28,19 +28,19 @@ public class Run {
 
 		// Simulation 1
 		// All hosts will send 100 frames as fast as they can (basically no delay between frames)
-		host1.StartSending(host3.getAddr(), 100000, 0, 0, 10, 16);
-		host2.StartSending(host4.getAddr(), 100000, 0, 0, 10, 16);
-		host3.StartSending(host1.getAddr(), 100000, 0, 0, 10, 16);
-		host4.StartSending(host2.getAddr(), 100000, 0, 0, 10, 16);
+		host1.StartSending(host3.getAddr(), 10000, 0, 0, 10, 16);
+		host2.StartSending(host4.getAddr(), 10000, 0, 0, 10, 16);
+		host3.StartSending(host1.getAddr(), 10000, 0, 0, 10, 16);
+		host4.StartSending(host2.getAddr(), 10000, 0, 0, 10, 16);
 
-		/*
 		// Simulation 2
 		// These hosts will send 100 messages with time interval 1000.
-		host1.StartSending(host3.getAddr(), 100, 1000, 100, 10);
-		host2.StartSending(host4.getAddr(), 100, 1000, 200, 10);
+		/*
+		host1.StartSending(host3.getAddr(), 10000, 1000, 0, 10, 16);
+		host2.StartSending(host4.getAddr(), 10000, 1000, 0, 10, 16);
 		// These hosts will send 50 messages with time interval 2000.
-		host3.StartSending(host1.getAddr(), 50, 2000, 300, 10);
-		host4.StartSending(host2.getAddr(), 50, 2000, 400, 10);
+		host3.StartSending(host1.getAddr(), 5000, 2000, 0, 10, 16);
+		host4.StartSending(host2.getAddr(), 5000, 2000, 0, 10, 16);
 		*/
 
 		// Start the simulation engine and of we go!

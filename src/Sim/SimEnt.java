@@ -12,7 +12,7 @@ public abstract class SimEnt {
 	private static Logger logger = new Logger("sim_output.log");
 	private static int msgCount = 0;
 
-	private static void newMessage(String formattedMsg) {
+	private static void logMessage(String formattedMsg) {
 		SimEnt.logger.log(formattedMsg);
 		if (++msgCount > 100) // Hardcoded value
 			SimEnt.logger.writeLog();
@@ -60,7 +60,7 @@ public abstract class SimEnt {
 	public void printMsg(String msg) {
 		String formattedMsg = String.format("[%08d][%10s]: %s", (int) SimEngine.getTime(), this._identifierString, msg);
 		System.out.println(formattedMsg);
-		SimEnt.newMessage(formattedMsg);
+		SimEnt.logMessage(formattedMsg);
 	}
 
 	public String identifierString() {

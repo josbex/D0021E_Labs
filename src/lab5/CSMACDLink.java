@@ -43,12 +43,10 @@ public class CSMACDLink extends IdealLink {
 	public void recv(SimEnt src, Event ev) {
 		if (ev instanceof StartTransmission) {
 
-			Frame frame = ((StartTransmission) ev).getFrame();
-
 			if (this.transmission == null) {
 				// If transmission is null, there is nothing currently transmitting on the link
 				EventHandle frameDeliveryHandle = send(this, new FrameDelivered(), this.propagationDelay + Frame.transmissionDelay);
-				this.transmission = new Transmission(src, frame, frameDeliveryHandle);
+				this.transmission = new Transmission(src, ((StartTransmission) ev).getFrame(), frameDeliveryHandle);
 			} else {
 				// Collision just happened, frame is now garbage
 				SimEngine.instance().deregister(this.transmission.frameDeliveryHandle);
@@ -71,21 +69,12 @@ public class CSMACDLink extends IdealLink {
 		}
 	}
 
-	/*
-	 * Send to all except src
-	 */
-	private void sendToAll(SimEnt src, Event ev, int delayExecution) {
-		for (SimEnt peer : connectors.keySet())
-			if (peer != src)
-				send(peer, ev, delayExecution);
-	}
-
-	private void setConnectorStatus(SimEnt peer, ConnectorStatus status) {
-		this.connectors.put(peer, status);
+	private void setConnectorStatus(SimEnt src, ConnectorStatus status) {
+		this.connectors.put(src, status);
 
 		if (status == ConnectorStatus.transmitting) {
 			// A node started transmitting, send initial signal to other nodes
-			sendToAll(peer, new LinkStatusChanged(LinkStatus.busy), this.propagationDelay);
+			sendToAll(src, new LinkStatusChanged(LinkStatus.busy), this.propagationDelay);
 		} else {
 			// A node stopped transmitting
 			SimEnt otherTransmittingNode = null;
@@ -103,10 +92,19 @@ public class CSMACDLink extends IdealLink {
 				send(otherTransmittingNode, new LinkStatusChanged(LinkStatus.idle), this.propagationDelay);
 			} else {
 				// Last node stopped transmission, tell all other nodes that link is idle.
-				sendToAll(peer, new LinkStatusChanged(LinkStatus.idle), this.propagationDelay);
+				sendToAll(src, new LinkStatusChanged(LinkStatus.idle), this.propagationDelay);
 				this.transmission = null;
 			}
 		}
+	}
+
+	/*
+	 * Send to all except src
+	 */
+	private void sendToAll(SimEnt src, Event ev, int delayExecution) {
+		for (SimEnt peer : connectors.keySet())
+			if (peer != src)
+				send(peer, ev, delayExecution);
 	}
 
 	@Override

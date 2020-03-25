@@ -23,7 +23,7 @@ public class CSMACDNode extends Node {
 	private NetworkAddr toNode;
 	private Random r;
 
-	private Logger arrivalLogger;
+	private Logger frameDeliveryLogger;
 	private Logger collisionLogger;
 
 
@@ -35,7 +35,7 @@ public class CSMACDNode extends Node {
 		this.collisionCounter = 0;
 		this.droppedFrames = 0;
 
-		this.arrivalLogger = new Logger("NODE" + network + "_" + node + ".log");
+		this.frameDeliveryLogger = new Logger("NODE" + network + "_" + node + ".log");
 		this.collisionLogger = new Logger("NODE" + network + "_" + node + "_Collisions.log");
 		r = new Random();
 	}
@@ -71,10 +71,11 @@ public class CSMACDNode extends Node {
 		} else if (ev instanceof FrameDelivered) {
 
 			// Frame has now been successfully transmitted
-			this.arrivalLogger.log("" + (int) SimEngine.getTime() + ", " + this.currentFrame.seq());
+			this.frameDeliveryLogger.log("" + (int) SimEngine.getTime() + ", " + this.currentFrame.seq());
 
 			this.stopTransmitting();
 			this.collisionCounter = 0;
+			this.collisionLogger.log("" + (int) SimEngine.getTime() + ", "  + this.collisionCounter);
 			this.currentFrame = null;
 
 			if (this._sentmsg < this._stopSendingAfter)
@@ -88,13 +89,14 @@ public class CSMACDNode extends Node {
 			this.linkStatus = ((LinkStatusChanged) ev).getLinkStatus();
 
 			if (this.isTransmitting && this.linkStatus.isBusy()) {
-				// Collision detected, stop transmission and start backoff timer
+				// Collision detected, stop transmission and increment counter
 				this.collisionCounter++;
 				this.collisionLogger.log("" + (int) SimEngine.getTime() + ", "  + this.collisionCounter);
 
 				this.stopTransmitting();
 
 				if (this.collisionCounter < this.maxCollisions) {
+					// Calculate the backoff and start the timer
 					int backoff = exponentialBackoff();
 					this.backingOff = true;
 
@@ -108,7 +110,7 @@ public class CSMACDNode extends Node {
 									" (" + ((int) SimEngine.getTime() + backoff) + ")"
 					);
 				} else {
-					// Transmission of frame failed
+					// Transmission of frame failed, discard the frame
 					this.collisionCounter = 0;
 					this.droppedFrames++;
 					send(this, new TimerEvent(), _timeBetweenSending);
